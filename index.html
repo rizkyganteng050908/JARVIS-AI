@@ -1,0 +1,727 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>J.A.R.V.I.S. - Just A Rather Very Intelligent System</title>
+    <!-- Tailwind CSS untuk styling modern dan responsif -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font futuristik & teknis -->
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Font Awesome untuk ikon HUD -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --jarvis-cyan: #00f3ff;
+            --jarvis-blue: #0066ff;
+            --jarvis-dark: #030812;
+            --jarvis-panel: rgba(6, 20, 42, 0.75);
+            --jarvis-border: rgba(0, 243, 255, 0.3);
+            --jarvis-alert: #ff3b30;
+        }
+
+        body {
+            background-color: var(--jarvis-dark);
+            color: #e0f7fa;
+            font-family: 'Rajdhani', sans-serif;
+            overflow-x: hidden;
+            background-image: 
+                radial-gradient(circle at 50% 50%, rgba(0, 102, 255, 0.12) 0%, transparent 70%),
+                linear-gradient(rgba(0, 243, 255, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 243, 255, 0.03) 1px, transparent 1px);
+            background-size: 100% 100%, 30px 30px, 30px 30px;
+        }
+
+        .font-orbitron {
+            font-family: 'Orbitron', sans-serif;
+        }
+
+        /* Animasi Arc Reactor & HUD Rings */
+        @keyframes spin-slow {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @keyframes spin-reverse {
+            0% { transform: rotate(360deg); }
+            100% { transform: rotate(0deg); }
+        }
+
+        @keyframes pulse-glow {
+            0%, 100% { box-shadow: 0 0 20px rgba(0, 243, 255, 0.4), inset 0 0 20px rgba(0, 243, 255, 0.4); }
+            50% { box-shadow: 0 0 40px rgba(0, 243, 255, 0.8), inset 0 0 30px rgba(0, 243, 255, 0.7); }
+        }
+
+        @keyframes speaking-pulse {
+            0%, 100% { transform: scale(1); box-shadow: 0 0 25px #00f3ff, inset 0 0 25px #00f3ff; }
+            50% { transform: scale(1.08); box-shadow: 0 0 55px #00f3ff, inset 0 0 40px #ffffff; }
+        }
+
+        .ring-outer {
+            animation: spin-slow 25s linear infinite;
+        }
+
+        .ring-middle {
+            animation: spin-reverse 15s linear infinite;
+        }
+
+        .ring-inner {
+            animation: spin-slow 8s linear infinite;
+        }
+
+        .core-idle {
+            animation: pulse-glow 3s ease-in-out infinite;
+        }
+
+        .core-speaking {
+            animation: speaking-pulse 0.4s ease-in-out infinite !important;
+        }
+
+        .core-listening {
+            box-shadow: 0 0 45px #ff3b30, inset 0 0 30px #ff3b30 !important;
+            border-color: #ff3b30 !important;
+        }
+
+        /* Custom Scrollbar untuk Log Chat */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(0, 20, 40, 0.5);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(0, 243, 255, 0.4);
+            border-radius: 3px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(0, 243, 255, 0.8);
+        }
+
+        /* Glassmorphism HUD Panel */
+        .hud-panel {
+            background: var(--jarvis-panel);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--jarvis-border);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.6);
+        }
+
+        .hud-corner {
+            position: relative;
+        }
+        .hud-corner::before, .hud-corner::after {
+            content: '';
+            position: absolute;
+            width: 12px;
+            height: 12px;
+            border-color: var(--jarvis-cyan);
+            border-style: solid;
+            pointer-events: none;
+        }
+        .hud-corner::before {
+            top: -1px;
+            left: -1px;
+            border-width: 2px 0 0 2px;
+        }
+        .hud-corner::after {
+            bottom: -1px;
+            right: -1px;
+            border-width: 0 2px 2px 0;
+        }
+
+        /* Equalizer Bars */
+        .eq-bar {
+            width: 4px;
+            background-color: var(--jarvis-cyan);
+            border-radius: 2px;
+            transition: height 0.1s ease;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between p-3 sm:p-6 select-none">
+
+    <!-- Header HUD -->
+    <header class="w-full max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-4 pb-4 border-b border-cyan-500/30">
+        <div class="flex items-center gap-3">
+            <div class="w-3 h-3 rounded-full bg-cyan-400 animate-ping"></div>
+            <div>
+                <h1 class="font-orbitron text-xl sm:text-2xl font-bold tracking-widest text-cyan-400 drop-shadow-[0_0_8px_rgba(0,243,255,0.6)]">
+                    J.A.R.V.I.S. <span class="text-xs font-normal text-cyan-200/70 tracking-normal">MARK LXXXV</span>
+                </h1>
+                <p class="text-xs text-cyan-300/70 tracking-wider">STARK INDUSTRIES // NEURAL INTERFACE ACTIVE</p>
+            </div>
+        </div>
+
+        <!-- Status & Telemetry -->
+        <div class="flex items-center gap-4 sm:gap-6 text-xs sm:text-sm">
+            <div class="hidden md:flex flex-col items-end">
+                <span class="text-cyan-400/70">SYSTEM STATUS</span>
+                <span id="sys-status" class="font-orbitron text-emerald-400 font-semibold">ONLINE // READY</span>
+            </div>
+            <div class="hidden sm:flex flex-col items-end">
+                <span class="text-cyan-400/70">LOCAL TIME</span>
+                <span id="hud-clock" class="font-orbitron text-cyan-200">00:00:00</span>
+            </div>
+            <!-- Toggle Voice Output -->
+            <button id="toggle-voice-btn" class="hud-panel px-3 py-2 rounded-lg flex items-center gap-2 text-cyan-300 hover:bg-cyan-500/20 transition cursor-pointer" title="Aktifkan/Matikan Suara JARVIS">
+                <i id="voice-icon" class="fas fa-volume-up text-cyan-400"></i>
+                <span class="hidden sm:inline font-semibold">SUARA: ON</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Interface Grid -->
+    <main class="w-full max-w-7xl mx-auto my-4 flex-1 grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
+        
+        <!-- Left Column: Telemetry & Arc Reactor Core (5 cols on lg) -->
+        <div class="lg:col-span-5 flex flex-col justify-between gap-4">
+            
+            <!-- Arc Reactor Visualizer Container -->
+            <div class="hud-panel hud-corner rounded-2xl p-6 flex flex-col items-center justify-center relative overflow-hidden flex-1 min-h-[300px]">
+                <!-- Background Decorative Grid -->
+                <div class="absolute inset-0 opacity-20 pointer-events-none flex items-center justify-center">
+                    <div class="w-72 h-72 rounded-full border border-dashed border-cyan-400"></div>
+                </div>
+
+                <!-- Status Label Top -->
+                <div class="absolute top-4 left-4 text-xs font-orbitron text-cyan-400/80">
+                    CORE TEMP: <span class="text-cyan-200">34.2°C</span>
+                </div>
+                <div class="absolute top-4 right-4 text-xs font-orbitron text-cyan-400/80">
+                    PROTOCOL: <span class="text-emerald-400">CASUAL-ID</span>
+                </div>
+
+                <!-- The Arc Reactor Core -->
+                <div id="arc-reactor" class="relative w-48 h-48 sm:w-56 sm:h-56 flex items-center justify-center cursor-pointer group" title="Klik untuk bicara dengan JARVIS">
+                    <!-- Outer Ring -->
+                    <div class="ring-outer absolute inset-0 rounded-full border-2 border-dashed border-cyan-400/60"></div>
+                    <!-- Middle Segmented Ring -->
+                    <div class="ring-middle absolute inset-3 rounded-full border-4 border-t-cyan-400 border-r-transparent border-b-cyan-400 border-l-transparent opacity-80"></div>
+                    <!-- Inner Ring -->
+                    <div class="ring-inner absolute inset-7 rounded-full border-2 border-dotted border-cyan-300"></div>
+                    
+                    <!-- Center Glowing Core -->
+                    <div id="reactor-core" class="core-idle relative w-24 h-24 sm:w-28 sm:h-28 rounded-full bg-cyan-950/90 border-2 border-cyan-300 flex flex-col items-center justify-center transition-all duration-300 group-hover:scale-105">
+                        <i id="core-icon" class="fas fa-microphone text-2xl sm:text-3xl text-cyan-300 drop-shadow-[0_0_10px_#00f3ff]"></i>
+                        <span id="core-label" class="text-[10px] font-orbitron tracking-widest text-cyan-200 mt-1">STANDBY</span>
+                    </div>
+                </div>
+
+                <!-- Audio Visualizer Equalizer -->
+                <div id="visualizer" class="flex items-end justify-center gap-1 h-8 mt-6">
+                    <div class="eq-bar h-2"></div>
+                    <div class="eq-bar h-3"></div>
+                    <div class="eq-bar h-5"></div>
+                    <div class="eq-bar h-2"></div>
+                    <div class="eq-bar h-6"></div>
+                    <div class="eq-bar h-4"></div>
+                    <div class="eq-bar h-7"></div>
+                    <div class="eq-bar h-3"></div>
+                    <div class="eq-bar h-5"></div>
+                    <div class="eq-bar h-2"></div>
+                    <div class="eq-bar h-4"></div>
+                    <div class="eq-bar h-2"></div>
+                </div>
+
+                <p id="interaction-hint" class="text-xs text-cyan-300/70 mt-3 text-center">
+                    Klik inti reaktor di atas untuk ngobrol pakai suara, atau ketik pesan di sebelah kanan.
+                </p>
+            </div>
+
+            <!-- Quick Commands / Diagnostic Box -->
+            <div class="hud-panel hud-corner rounded-xl p-4">
+                <div class="flex items-center justify-between mb-2">
+                    <span class="text-xs font-orbitron text-cyan-400 tracking-wider"><i class="fas fa-bolt mr-1"></i> PERINTAH CEPAT</span>
+                    <span class="text-[10px] text-cyan-500">TAP TO EXECUTE</span>
+                </div>
+                <div class="grid grid-cols-2 gap-2 text-xs">
+                    <button onclick="sendQuickPrompt('Halo Jarvis, gimana kabar hari ini?')" class="text-left p-2 rounded bg-cyan-950/50 border border-cyan-500/30 hover:bg-cyan-500/20 hover:border-cyan-400 transition truncate">
+                        "Gimana kabar hari ini?"
+                    </button>
+                    <button onclick="sendQuickPrompt('Cek status sistem dan cuaca dong Jarv')" class="text-left p-2 rounded bg-cyan-950/50 border border-cyan-500/30 hover:bg-cyan-500/20 hover:border-cyan-400 transition truncate">
+                        "Cek status & cuaca dong"
+                    </button>
+                    <button onclick="sendQuickPrompt('Kasih ide proyek seru buat weekend ini')" class="text-left p-2 rounded bg-cyan-950/50 border border-cyan-500/30 hover:bg-cyan-500/20 hover:border-cyan-400 transition truncate">
+                        "Ide proyek weekend"
+                    </button>
+                    <button onclick="sendQuickPrompt('Ceritain fakta unik tentang luar angkasa')" class="text-left p-2 rounded bg-cyan-950/50 border border-cyan-500/30 hover:bg-cyan-500/20 hover:border-cyan-400 transition truncate">
+                        "Fakta unik luar angkasa"
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Column: Communication Terminal & Chat (7 cols on lg) -->
+        <div class="lg:col-span-7 hud-panel hud-corner rounded-2xl flex flex-col h-[520px] lg:h-auto overflow-hidden">
+            
+            <!-- Terminal Header -->
+            <div class="px-5 py-3 border-b border-cyan-500/30 flex items-center justify-between bg-cyan-950/30">
+                <div class="flex items-center gap-2">
+                    <i class="fas fa-terminal text-cyan-400 text-sm"></i>
+                    <span class="font-orbitron text-xs sm:text-sm font-semibold tracking-wider text-cyan-300">COMM-LINK TERMINAL</span>
+                </div>
+                <button id="clear-chat-btn" class="text-xs text-cyan-400/70 hover:text-cyan-300 transition flex items-center gap-1 cursor-pointer">
+                    <i class="fas fa-trash-alt"></i> Reset Log
+                </button>
+            </div>
+
+            <!-- Chat History Container -->
+            <div id="chat-container" class="flex-1 p-4 sm:p-5 overflow-y-auto space-y-4 scroll-smooth">
+                <!-- Initial Greeting Message -->
+                <div class="flex items-start gap-3">
+                    <div class="w-8 h-8 rounded-lg bg-cyan-500/20 border border-cyan-400 flex items-center justify-center shrink-0 mt-1">
+                        <i class="fas fa-robot text-cyan-300 text-sm"></i>
+                    </div>
+                    <div class="bg-cyan-950/60 border border-cyan-500/30 rounded-2xl rounded-tl-none p-3.5 max-w-[85%] text-sm sm:text-base leading-relaxed text-cyan-50 shadow-md">
+                        <div class="text-[11px] font-orbitron text-cyan-400 mb-1">J.A.R.V.I.S. // SYSTEM</div>
+                        Halo Bos! Sistem sudah aktif dan siap tempur. Santai aja ngobrolnya, mau nanya apa nih hari ini? Mau bahas teknologi, minta saran, atau sekadar ngobrol ngalor-ngidul juga saya ladenin.
+                    </div>
+                </div>
+            </div>
+
+            <!-- Custom Notification Banner (Pengganti alert) -->
+            <div id="notification-banner" class="hidden px-4 py-2 bg-amber-500/20 border-t border-amber-500/40 text-amber-200 text-xs flex items-center justify-between">
+                <span id="notification-text">Pesan notifikasi</span>
+                <button onclick="hideNotification()" class="text-amber-300 hover:text-white ml-2"><i class="fas fa-times"></i></button>
+            </div>
+
+            <!-- Input Area -->
+            <div class="p-3 sm:p-4 border-t border-cyan-500/30 bg-cyan-950/40">
+                <form id="chat-form" class="flex items-center gap-2 sm:gap-3">
+                    <button type="button" id="mic-btn" class="w-11 h-11 rounded-xl bg-cyan-950 border border-cyan-500/50 text-cyan-300 hover:bg-cyan-500/20 hover:border-cyan-400 flex items-center justify-center shrink-0 transition cursor-pointer" title="Bicara (Voice Input)">
+                        <i class="fas fa-microphone"></i>
+                    </button>
+                    <input 
+                        type="text" 
+                        id="user-input" 
+                        placeholder="Ketik pertanyaan atau obrolan santai ke JARVIS..." 
+                        class="flex-1 bg-slate-950/80 border border-cyan-500/40 rounded-xl px-4 py-2.5 text-sm sm:text-base text-cyan-50 placeholder-cyan-500/50 focus:outline-none focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400 transition"
+                        autocomplete="off"
+                    >
+                    <button type="submit" id="send-btn" class="px-4 sm:px-5 h-11 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-orbitron font-bold text-xs sm:text-sm tracking-wider flex items-center gap-2 shrink-0 transition shadow-[0_0_15px_rgba(0,243,255,0.4)] cursor-pointer">
+                        <span>KIRIM</span>
+                        <i class="fas fa-paper-plane"></i>
+                    </button>
+                </form>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="w-full max-w-7xl mx-auto pt-2 text-center text-[11px] text-cyan-500/60 font-orbitron tracking-widest">
+        STARK INDUSTRIES SECURE SERVER // POWERED BY GEMINI NEURAL ENGINE
+    </footer>
+
+    <!-- JavaScript Logic -->
+    <script>
+        // ==========================================
+        // 1. KONFIGURASI & STATE APLIKASI
+        // ==========================================
+        const apiKey = ""; // Disediakan otomatis oleh environment runtime
+        const modelName = "gemini-3-flash-preview";
+
+        // Persona JARVIS dalam Bahasa Indonesia yang santai, cerdas, akrab, namun tetap punya wibawa asisten Tony Stark
+        const SYSTEM_INSTRUCTION = `Kamu adalah J.A.R.V.I.S. (Just A Rather Very Intelligent System), kecerdasan buatan canggih buatan Tony Stark. 
+        Gaya bicaramu menggunakan Bahasa Indonesia yang santai, luwes, akrab, dan TIDAK KAKU sama sekali (seperti asisten pribadi yang sudah lama kenal dekat dan asyik diajak ngobrol). 
+        Gunakan panggilan seperti "Bos", "Bro", atau sapaan santai lainnya secara natural (jangan berlebihan). 
+        Kamu cerdas, tanggap, kadang sedikit humoris atau sarkas halus ala Jarvis di film Iron Man, tapi selalu membantu dan memberikan jawaban yang akurat serta mudah dipahami. 
+        Hindari bahasa baku yang kaku seperti robot terjemahan. Jangan gunakan markdown yang terlalu rumit seperti tabel panjang agar enak dibaca dan diucapkan oleh sistem Text-to-Speech (TTS). Buat jawaban ringkas, padat, dan natural kecuali diminta menjelaskan secara detail.`;
+
+        let chatHistory = [];
+        let isVoiceEnabled = true;
+        let isListening = false;
+        let isProcessing = false;
+        let eqInterval = null;
+
+        // Elemen DOM
+        const chatContainer = document.getElementById('chat-container');
+        const chatForm = document.getElementById('chat-form');
+        const userInput = document.getElementById('user-input');
+        const sendBtn = document.getElementById('send-btn');
+        const micBtn = document.getElementById('mic-btn');
+        const arcReactor = document.getElementById('arc-reactor');
+        const reactorCore = document.getElementById('reactor-core');
+        const coreIcon = document.getElementById('core-icon');
+        const coreLabel = document.getElementById('core-label');
+        const sysStatus = document.getElementById('sys-status');
+        const toggleVoiceBtn = document.getElementById('toggle-voice-btn');
+        const voiceIcon = document.getElementById('voice-icon');
+        const clearChatBtn = document.getElementById('clear-chat-btn');
+        const eqBars = document.querySelectorAll('.eq-bar');
+
+        // ==========================================
+        // 2. JAM DIGITAL & VISUALIZER HUD
+        // ==========================================
+        function updateClock() {
+            const now = new Date();
+            const timeStr = now.toLocaleTimeString('id-ID', { hour12: false });
+            document.getElementById('hud-clock').textContent = timeStr + ' WIB';
+        }
+        setInterval(updateClock, 1000);
+        updateClock();
+
+        function startEqualizer(active) {
+            if (eqInterval) clearInterval(eqInterval);
+            if (!active) {
+                eqBars.forEach(bar => bar.style.height = '8px');
+                return;
+            }
+            eqInterval = setInterval(() => {
+                eqBars.forEach(bar => {
+                    const randomHeight = Math.floor(Math.random() * 26) + 6;
+                    bar.style.height = `${randomHeight}px`;
+                });
+            }, 120);
+        }
+
+        function setCoreState(state) {
+            reactorCore.classList.remove('core-idle', 'core-speaking', 'core-listening');
+            if (state === 'listening') {
+                reactorCore.classList.add('core-listening');
+                coreIcon.className = 'fas fa-ear-listen text-2xl sm:text-3xl text-red-400';
+                coreLabel.textContent = 'LISTENING';
+                coreLabel.className = 'text-[10px] font-orbitron tracking-widest text-red-300 mt-1';
+                sysStatus.textContent = 'AUDIO INPUT ACTIVE';
+                sysStatus.className = 'font-orbitron text-red-400 font-semibold';
+                startEqualizer(true);
+            } else if (state === 'processing') {
+                reactorCore.classList.add('core-idle');
+                coreIcon.className = 'fas fa-microchip fa-spin text-2xl sm:text-3xl text-amber-300';
+                coreLabel.textContent = 'THINKING';
+                coreLabel.className = 'text-[10px] font-orbitron tracking-widest text-amber-200 mt-1';
+                sysStatus.textContent = 'PROCESSING DATA...';
+                sysStatus.className = 'font-orbitron text-amber-400 font-semibold';
+                startEqualizer(true);
+            } else if (state === 'speaking') {
+                reactorCore.classList.add('core-speaking');
+                coreIcon.className = 'fas fa-wave-square text-2xl sm:text-3xl text-cyan-200';
+                coreLabel.textContent = 'SPEAKING';
+                coreLabel.className = 'text-[10px] font-orbitron tracking-widest text-cyan-100 mt-1';
+                sysStatus.textContent = 'TRANSMITTING AUDIO';
+                sysStatus.className = 'font-orbitron text-cyan-300 font-semibold';
+                startEqualizer(true);
+            } else {
+                reactorCore.classList.add('core-idle');
+                coreIcon.className = 'fas fa-microphone text-2xl sm:text-3xl text-cyan-300';
+                coreLabel.textContent = 'STANDBY';
+                coreLabel.className = 'text-[10px] font-orbitron tracking-widest text-cyan-200 mt-1';
+                sysStatus.textContent = 'ONLINE // READY';
+                sysStatus.className = 'font-orbitron text-emerald-400 font-semibold';
+                startEqualizer(false);
+            }
+        }
+
+        // ==========================================
+        // 3. NOTIFIKASI UI (PENGGANTI ALERT)
+        // ==========================================
+        function showNotification(msg) {
+            const banner = document.getElementById('notification-banner');
+            document.getElementById('notification-text').textContent = msg;
+            banner.classList.remove('hidden');
+            setTimeout(() => {
+                banner.classList.add('hidden');
+            }, 5000);
+        }
+
+        function hideNotification() {
+            document.getElementById('notification-banner').classList.add('hidden');
+        }
+
+        // ==========================================
+        // 4. TEXT-TO-SPEECH (SUARA JARVIS)
+        // ==========================================
+        function speakText(text) {
+            if (!isVoiceEnabled || !('speechSynthesis' in window)) return;
+
+            // Hentikan suara yang sedang berjalan
+            window.speechSynthesis.cancel();
+
+            // Bersihkan karakter simbol markdown agar pembacaan suara mulus
+            const cleanText = text
+                .replace(/[*#_`~]/g, '')
+                .replace(/\n+/g, '. ');
+
+            const utterance = new SpeechSynthesisUtterance(cleanText);
+            utterance.lang = 'id-ID';
+            utterance.rate = 1.05; // Sedikit lebih sigap
+            utterance.pitch = 0.92; // Sedikit lebih berat/berwibawa ala asisten pria
+
+            // Cari suara Bahasa Indonesia jika tersedia di browser
+            const voices = window.speechSynthesis.getVoices();
+            const idVoice = voices.find(v => v.lang.includes('id-ID') || v.lang.includes('id_ID'));
+            if (idVoice) {
+                utterance.voice = idVoice;
+            }
+
+            utterance.onstart = () => setCoreState('speaking');
+            utterance.onend = () => setCoreState('idle');
+            utterance.onerror = () => setCoreState('idle');
+
+            window.speechSynthesis.speak(utterance);
+        }
+
+        // Pastikan daftar voice dimuat oleh browser
+        if ('speechSynthesis' in window) {
+            window.speechSynthesis.onvoiceschanged = () => {
+                window.speechSynthesis.getVoices();
+            };
+        }
+
+        toggleVoiceBtn.addEventListener('click', () => {
+            isVoiceEnabled = !isVoiceEnabled;
+            if (isVoiceEnabled) {
+                voiceIcon.className = 'fas fa-volume-up text-cyan-400';
+                toggleVoiceBtn.querySelector('span').textContent = 'SUARA: ON';
+                showNotification('Modul suara JARVIS diaktifkan.');
+            } else {
+                window.speechSynthesis.cancel();
+                setCoreState('idle');
+                voiceIcon.className = 'fas fa-volume-mute text-slate-400';
+                toggleVoiceBtn.querySelector('span').textContent = 'SUARA: OFF';
+                showNotification('Modul suara JARVIS dimatikan (Mode Teks).');
+            }
+        });
+
+        // ==========================================
+        // 5. SPEECH RECOGNITION (INPUT SUARA)
+        // ==========================================
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        let recognition = null;
+
+        if (SpeechRecognition) {
+            recognition = new SpeechRecognition();
+            recognition.lang = 'id-ID';
+            recognition.interimResults = false;
+            recognition.maxAlternatives = 1;
+
+            recognition.onstart = () => {
+                isListening = true;
+                window.speechSynthesis.cancel();
+                setCoreState('listening');
+                micBtn.classList.add('bg-red-500/30', 'border-red-400', 'text-red-300');
+            };
+
+            recognition.onresult = (event) => {
+                const transcript = event.results[0][0].transcript;
+                userInput.value = transcript;
+                handleSendMessage(transcript);
+            };
+
+            recognition.onerror = (event) => {
+                console.warn('Speech recognition error:', event.error);
+                if (event.error === 'not-allowed') {
+                    showNotification('Akses mikrofon ditolak browser. Silakan izinkan mikrofon atau gunakan ketikan teks.');
+                } else if (event.error !== 'aborted') {
+                    showNotification('Suara kurang jelas Bos, coba ulangi lagi ya.');
+                }
+            };
+
+            recognition.onend = () => {
+                isListening = false;
+                micBtn.classList.remove('bg-red-500/30', 'border-red-400', 'text-red-300');
+                if (!isProcessing) setCoreState('idle');
+            };
+        }
+
+        function toggleListening() {
+            if (!recognition) {
+                showNotification('Browser kamu belum mendukung fitur input suara langsung. Gunakan kolom teks di bawah ya Bos!');
+                return;
+            }
+            if (isListening) {
+                recognition.stop();
+            } else {
+                try {
+                    recognition.start();
+                } catch (e) {
+                    console.error(e);
+                }
+            }
+        }
+
+        micBtn.addEventListener('click', toggleListening);
+        arcReactor.addEventListener('click', toggleListening);
+
+        // ==========================================
+        // 6. INTEGRASI GEMINI API DENGAN BACKOFF
+        // ==========================================
+        async function fetchJarvisResponse(userMessage) {
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey}`;
+
+            // Tambahkan pesan user ke riwayat percakapan
+            chatHistory.push({
+                role: "user",
+                parts: [{ text: userMessage }]
+            });
+
+            // Batasi riwayat agar konteks tetap ringan (10 pesan terakhir)
+            const recentHistory = chatHistory.slice(-10);
+
+            const payload = {
+                contents: recentHistory,
+                systemInstruction: {
+                    parts: [{ text: SYSTEM_INSTRUCTION }]
+                },
+                tools: [{ "google_search": {} }], // Aktifkan pencarian Google agar JARVIS selalu up-to-date
+                generationConfig: {
+                    temperature: 0.8, // Lebih kreatif dan natural
+                    topP: 0.95,
+                }
+            };
+
+            const maxRetries = 5;
+            let delay = 1000;
+
+            for (let attempt = 0; attempt < maxRetries; attempt++) {
+                try {
+                    const response = await fetch(url, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+
+                    const data = await response.json();
+                    const replyText = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+
+                    if (replyText) {
+                        // Simpan balasan JARVIS ke riwayat
+                        chatHistory.push({
+                            role: "model",
+                            parts: [{ text: replyText }]
+                        });
+                        return replyText;
+                    } else {
+                        throw new Error("Respons kosong dari server.");
+                    }
+                } catch (error) {
+                    if (attempt === maxRetries - 1) {
+                        // Hapus pesan user terakhir jika gagal total agar history tidak rusak
+                        chatHistory.pop();
+                        return "Waduh Bos, koneksi ke satelit Stark lagi gangguan nih. Coba tanya lagi sebentar ya!";
+                    }
+                    await new Promise(res => setTimeout(res, delay));
+                    delay *= 2;
+                }
+            }
+        }
+
+        // ==========================================
+        // 7. MANAJEMEN CHAT & RENDER UI
+        // ==========================================
+        function formatMessageText(text) {
+            // Ubah bold markdown **teks** menjadi HTML <strong> dan baris baru menjadi <br>
+            let safeText = text
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;");
+            safeText = safeText.replace(/\*\*(.*?)\*\*/g, '<strong class="text-cyan-300 font-semibold">$1</strong>');
+            safeText = safeText.replace(/\n/g, '<br>');
+            return safeText;
+        }
+
+        function appendMessage(sender, text) {
+            const wrapper = document.createElement('div');
+            
+            if (sender === 'user') {
+                wrapper.className = 'flex items-start justify-end gap-3';
+                wrapper.innerHTML = `
+                    <div class="bg-blue-600/30 border border-blue-400/40 rounded-2xl rounded-tr-none p-3.5 max-w-[85%] text-sm sm:text-base leading-relaxed text-white shadow-md">
+                        <div class="text-[11px] font-orbitron text-blue-300 mb-1 text-right">USER // COMMAND</div>
+                        ${formatMessageText(text)}
+                    </div>
+                    <div class="w-8 h-8 rounded-lg bg-blue-500/20 border border-blue-400 flex items-center justify-center shrink-0 mt-1">
+                        <i class="fas fa-user text-blue-300 text-sm"></i>
+                    </div>
+                `;
+            } else {
+                wrapper.className = 'flex items-start gap-3';
+                wrapper.innerHTML = `
+                    <div class="w-8 h-8 rounded-lg bg-cyan-500/20 border border-cyan-400 flex items-center justify-center shrink-0 mt-1">
+                        <i class="fas fa-robot text-cyan-300 text-sm"></i>
+                    </div>
+                    <div class="bg-cyan-950/60 border border-cyan-500/30 rounded-2xl rounded-tl-none p-3.5 max-w-[85%] text-sm sm:text-base leading-relaxed text-cyan-50 shadow-md">
+                        <div class="text-[11px] font-orbitron text-cyan-400 mb-1">J.A.R.V.I.S. // RESPONSE</div>
+                        ${formatMessageText(text)}
+                    </div>
+                `;
+            }
+
+            chatContainer.appendChild(wrapper);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+
+        function showTypingIndicator() {
+            const id = 'typing-' + Date.now();
+            const wrapper = document.createElement('div');
+            wrapper.id = id;
+            wrapper.className = 'flex items-start gap-3';
+            wrapper.innerHTML = `
+                <div class="w-8 h-8 rounded-lg bg-cyan-500/20 border border-cyan-400 flex items-center justify-center shrink-0 mt-1">
+                    <i class="fas fa-circle-notch fa-spin text-cyan-300 text-sm"></i>
+                </div>
+                <div class="bg-cyan-950/40 border border-cyan-500/20 rounded-2xl rounded-tl-none px-4 py-3 text-xs font-orbitron text-cyan-400 tracking-wider">
+                    MENGANALISIS DATA...
+                </div>
+            `;
+            chatContainer.appendChild(wrapper);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+            return id;
+        }
+
+        async function handleSendMessage(text) {
+            const trimmed = text.trim();
+            if (!trimmed || isProcessing) return;
+
+            isProcessing = true;
+            userInput.value = '';
+            appendMessage('user', trimmed);
+            setCoreState('processing');
+
+            const typingId = showTypingIndicator();
+
+            const reply = await fetchJarvisResponse(trimmed);
+
+            const typingEl = document.getElementById(typingId);
+            if (typingEl) typingEl.remove();
+
+            appendMessage('jarvis', reply);
+            isProcessing = false;
+            setCoreState('idle');
+
+            // Ucapkan balasan
+            speakText(reply);
+        }
+
+        chatForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            handleSendMessage(userInput.value);
+        });
+
+        function sendQuickPrompt(promptText) {
+            if (isProcessing) return;
+            handleSendMessage(promptText);
+        }
+
+        clearChatBtn.addEventListener('click', () => {
+            window.speechSynthesis.cancel();
+            setCoreState('idle');
+            chatHistory = [];
+            chatContainer.innerHTML = `
+                <div class="flex items-start gap-3">
+                    <div class="w-8 h-8 rounded-lg bg-cyan-500/20 border border-cyan-400 flex items-center justify-center shrink-0 mt-1">
+                        <i class="fas fa-robot text-cyan-300 text-sm"></i>
+                    </div>
+                    <div class="bg-cyan-950/60 border border-cyan-500/30 rounded-2xl rounded-tl-none p-3.5 max-w-[85%] text-sm sm:text-base leading-relaxed text-cyan-50 shadow-md">
+                        <div class="text-[11px] font-orbitron text-cyan-400 mb-1">J.A.R.V.I.S. // SYSTEM</div>
+                        Memori percakapan sudah dibersihkan, Bos. Ada topik baru yang mau kita bahas?
+                    </div>
+                </div>
+            `;
+            showNotification('Log percakapan berhasil di-reset.');
+        });
+    </script>
+</body>
+</html>
