@@ -161,8 +161,8 @@
                 <span class="text-cyan-400/70">LOCAL TIME</span>
                 <span id="hud-clock" class="font-orbitron text-cyan-200">00:00:00</span>
             </div>
-            <!-- Tombol Pengaturan API Key (Opsional) -->
-            <button id="api-key-btn" class="hud-panel px-3 py-2 rounded-lg flex items-center gap-2 text-cyan-300 hover:bg-cyan-500/20 transition cursor-pointer" title="Atur API Key Gemini Manual (Jika dibutuhkan)">
+            <!-- Tombol Pengaturan API Key -->
+            <button id="api-key-btn" class="hud-panel px-3 py-2 rounded-lg flex items-center gap-2 text-cyan-300 hover:bg-cyan-500/20 transition cursor-pointer" title="Atur API Key Gemini Manual">
                 <i class="fas fa-key text-amber-400"></i>
                 <span class="hidden sm:inline font-semibold">API KEY</span>
             </button>
@@ -182,7 +182,7 @@
                 <button id="close-api-modal" class="text-cyan-400 hover:text-white cursor-pointer"><i class="fas fa-times"></i></button>
             </div>
             <p class="text-xs text-cyan-100/80 leading-relaxed">
-                Jika Anda menjalankan file ini di luar preview atau koneksi satelit otomatis terblokir, masukkan <strong>Gemini API Key</strong> Anda di bawah ini agar JARVIS tetap bisa terhubung.
+                Masukkan <strong>Gemini API Key</strong> Anda di bawah ini agar JARVIS tetap terhubung saat dijalankan secara lokal. Kunci akan tersimpan otomatis di browser Anda.
             </p>
             <input type="password" id="custom-api-input" placeholder="Tempel Gemini API Key (AIzaSy...)" class="w-full bg-slate-950 border border-cyan-500/50 rounded-xl px-4 py-2.5 text-sm text-cyan-50 focus:outline-none focus:border-cyan-400">
             <div class="flex justify-end gap-2 pt-2">
@@ -300,7 +300,7 @@
                 </div>
             </div>
 
-            <!-- Custom Notification Banner (Pengganti alert) -->
+            <!-- Custom Notification Banner -->
             <div id="notification-banner" class="hidden px-4 py-2 bg-amber-500/20 border-t border-amber-500/40 text-amber-200 text-xs flex items-center justify-between">
                 <span id="notification-text">Pesan notifikasi</span>
                 <button onclick="hideNotification()" class="text-amber-300 hover:text-white ml-2"><i class="fas fa-times"></i></button>
@@ -338,10 +338,9 @@
         // ==========================================
         // 1. KONFIGURASI & STATE APLIKASI
         // ==========================================
-        let apiKey = ""; // Disediakan otomatis oleh environment runtime, atau diisi manual lewat tombol API KEY
+        let apiKey = localStorage.getItem('jarvis_gemini_api_key') || "";
         const modelName = "gemini-3-flash-preview";
 
-        // Persona JARVIS dalam Bahasa Indonesia yang santai, cerdas, akrab, namun tetap punya wibawa asisten Tony Stark
         const SYSTEM_INSTRUCTION = `Kamu adalah J.A.R.V.I.S. (Just A Rather Very Intelligent System), kecerdasan buatan canggih buatan Tony Stark. 
         Gaya bicaramu menggunakan Bahasa Indonesia yang santai, luwes, akrab, dan TIDAK KAKU sama sekali (seperti asisten pribadi yang sudah lama kenal dekat dan asyik diajak ngobrol). 
         Gunakan panggilan seperti "Bos", "Bro", atau sapaan santai lainnya secara natural (jangan berlebihan). 
@@ -358,7 +357,6 @@
         const chatContainer = document.getElementById('chat-container');
         const chatForm = document.getElementById('chat-form');
         const userInput = document.getElementById('user-input');
-        const sendBtn = document.getElementById('send-btn');
         const micBtn = document.getElementById('mic-btn');
         const arcReactor = document.getElementById('arc-reactor');
         const reactorCore = document.getElementById('reactor-core');
@@ -383,8 +381,13 @@
         closeApiModal.addEventListener('click', () => apiModal.classList.add('hidden'));
         saveApiBtn.addEventListener('click', () => {
             apiKey = customApiInput.value.trim();
+            if (apiKey) {
+                localStorage.setItem('jarvis_gemini_api_key', apiKey);
+            } else {
+                localStorage.removeItem('jarvis_gemini_api_key');
+            }
             apiModal.classList.add('hidden');
-            showNotification(apiKey ? 'Kunci akses satelit berhasil diperbarui, Bos!' : 'Kembali menggunakan jalur akses default.');
+            showNotification(apiKey ? 'Kunci akses satelit berhasil disimpan permanen, Bos!' : 'Kunci dihapus, kembali ke jalur default.');
         });
 
         // ==========================================
@@ -450,7 +453,7 @@
         }
 
         // ==========================================
-        // 3. NOTIFIKASI UI (PENGGANTI ALERT)
+        // 3. NOTIFIKASI UI
         // ==========================================
         function showNotification(msg) {
             const banner = document.getElementById('notification-banner');
@@ -471,20 +474,17 @@
         function speakText(text) {
             if (!isVoiceEnabled || !('speechSynthesis' in window)) return;
 
-            // Hentikan suara yang sedang berjalan
             window.speechSynthesis.cancel();
 
-            // Bersihkan karakter simbol markdown agar pembacaan suara mulus
             const cleanText = text
                 .replace(/[*#_`~]/g, '')
                 .replace(/\n+/g, '. ');
 
             const utterance = new SpeechSynthesisUtterance(cleanText);
             utterance.lang = 'id-ID';
-            utterance.rate = 1.05; // Sedikit lebih sigap
-            utterance.pitch = 0.92; // Sedikit lebih berat/berwibawa ala asisten pria
+            utterance.rate = 1.05;
+            utterance.pitch = 0.92;
 
-            // Cari suara Bahasa Indonesia jika tersedia di browser
             const voices = window.speechSynthesis.getVoices();
             const idVoice = voices.find(v => v.lang.includes('id-ID') || v.lang.includes('id_ID'));
             if (idVoice) {
@@ -498,7 +498,6 @@
             window.speechSynthesis.speak(utterance);
         }
 
-        // Pastikan daftar voice dimuat oleh browser
         if ('speechSynthesis' in window) {
             window.speechSynthesis.onvoiceschanged = () => {
                 window.speechSynthesis.getVoices();
@@ -584,13 +583,11 @@
         // 6. INTEGRASI GEMINI API DENGAN BACKOFF
         // ==========================================
         async function fetchJarvisResponse(userMessage) {
-            // Tambahkan pesan user ke riwayat percakapan
             chatHistory.push({
                 role: "user",
                 parts: [{ text: userMessage }]
             });
 
-            // Batasi riwayat agar konteks tetap ringan (10 pesan terakhir)
             const recentHistory = chatHistory.slice(-10);
 
             const makeRequest = async (targetModel, useSearchTool) => {
@@ -625,7 +622,6 @@
                 return await response.json();
             };
 
-            // Urutan jalur koneksi: standar dulu (paling stabil), lalu model cadangan
             const strategies = [
                 { model: "gemini-3-flash-preview", search: false },
                 { model: "gemini-2.5-flash", search: false },
@@ -671,7 +667,6 @@
         // 7. MANAJEMEN CHAT & RENDER UI
         // ==========================================
         function formatMessageText(text) {
-            // Ubah bold markdown **teks** menjadi HTML <strong> dan baris baru menjadi <br>
             let safeText = text
                 .replace(/&/g, "&amp;")
                 .replace(/</g, "&lt;")
@@ -750,7 +745,6 @@
             isProcessing = false;
             setCoreState('idle');
 
-            // Ucapkan balasan
             speakText(reply);
         }
 
