@@ -771,19 +771,40 @@
         // ==========================================
         function isImageRequest(text) {
             const lower = text.toLowerCase().trim();
-            const visualKeywords = [
+
+            // 1. Jika user menanyakan informasi/harga/berita/cara (misal: "harga tanah", "berapa harga mobil presiden"), jawab dengan teks + data akurat!
+            const infoQuestionTriggers = [
+                'harga', 'berapa', 'biaya', 'tarif', 'kenapa', 'mengapa',
+                'bagaimana cara', 'gimana cara', 'apa itu', 'apakah', 'jelaskan',
+                'jelasin', 'sejarah', 'spesifikasi', 'spek', 'info', 'berita', 'lokasi', 'alamat'
+            ];
+            const explicitVisualTriggers = [
                 'gambar', 'foto', 'ilustrasi', 'lukisan', 'poster', 'wallpaper',
                 'avatar', 'sketsa', 'potret', 'gambarin', 'lukisin', 'fotonin',
-                'visual', 'desain', 'logo', 'kartun', 'anime', 'pemandangan', 'render'
-            ];
-            const chatOnlyTriggers = [
-                'apakah gambar', 'kenapa gambar', 'gimana cara', 'bagaimana cara',
-                'maksud gambar', 'jelasin gambar', 'jelaskan gambar', 'apa itu gambar'
+                'visual', 'desain', 'denah', 'blueprint', 'render', 'tampilkan gambar', 'lihat foto'
             ];
 
-            if (chatOnlyTriggers.some(c => lower.includes(c))) return false;
-            if (visualKeywords.some(k => new RegExp(`\\b${k}\\b`, 'i').test(lower))) return true;
-            if (lower.startsWith('/gambar') || lower.startsWith('/foto')) return true;
+            const hasExplicitVisual = explicitVisualTriggers.some(k => new RegExp(`\\b${k}\\b`, 'i').test(lower))
+                || lower.startsWith('/gambar') || lower.startsWith('/foto');
+            const isInfoQuestion = infoQuestionTriggers.some(q => new RegExp(`\\b${q}\\b`, 'i').test(lower));
+
+            if (isInfoQuestion && !hasExplicitVisual) return false;
+            if (hasExplicitVisual) return true;
+
+            // 2. Deteksi otomatis jika user mengetik perintah singkat / objek visual langsung (anime, mobil, pesawat, helikopter, rs, rumah mewah, dll.)
+            const directVisualSubjects = [
+                'anime', 'mobil', 'mobi', 'pesawat', 'helikopter', 'helicopter',
+                'rumah sakit', 'rs', 'mobil presiden', 'rumah mewah', 'desain rumah',
+                'arsitektur', 'motor', 'kapal', 'kereta', 'robot', 'iron man',
+                'pemandangan', 'gunung', 'pantai', 'kota', 'kucing', 'anjing', 'naga', 'astronot'
+            ];
+            const hasDirectSubject = directVisualSubjects.some(s => new RegExp(`\\b${s}\\b`, 'i').test(lower));
+            const wordCount = lower.split(/\s+/).length;
+
+            // Jika user menulis kalimat pendek berisi subjek visual (misal: "mobil presiden", "pesawat tempur", "rumah mewah modern")
+            if (hasDirectSubject && wordCount <= 8 && !lower.includes('?')) {
+                return true;
+            }
 
             return false;
         }
@@ -799,8 +820,13 @@
                 .replace(/^(yg|yang|lain|lagi|baru|tentang|berupa|dengan|ala|gaya)\s+/gi, '')
                 .trim();
 
+            // Normalisasi singkatan & typo umum bahasa Indonesia agar hasil gambar jauh lebih akurat
+            cleaned = cleaned
+                .replace(/\bmobi\b/gi, 'mobil')
+                .replace(/\brs\b/gi, 'rumah sakit modern megah');
+
             const randomKeywords = ['random', 'acak', 'apa aja', 'apa saja', 'bebas', 'kejutan', 'terserah', 'lain', 'baru', 'lagi'];
-            if (!cleaned || cleaned.length < 3 || randomKeywords.includes(cleaned.toLowerCase())) {
+            if (!cleaned || cleaned.length < 2 || randomKeywords.includes(cleaned.toLowerCase())) {
                 const randomIdea = RANDOM_PHOTO_IDEAS[Math.floor(Math.random() * RANDOM_PHOTO_IDEAS.length)];
                 return { prompt: randomIdea, isRandom: true };
             }
@@ -815,7 +841,7 @@
                     contents: [{
                         role: "user",
                         parts: [{
-                            text: `Translate and refine this image request into a clear, vivid, accurate English image-generation prompt (max 35 words). Preserve the exact subject, colors, setting, and action requested. Output ONLY the English prompt without quotes or extra text:\n\n"${indonesianPrompt}"`
+                            text: `Translate and expand this Indonesian image request into a vivid, accurate English image-generation prompt (max 35 words). Examples: "mobil presiden" -> "armored luxury presidential limousine car with state flags, sleek black exterior", "desain rumah" -> "modern luxury architectural house exterior design with glass walls and garden", "rs" -> "modern architectural hospital building exterior". Output ONLY the English prompt without quotes:\n\n"${indonesianPrompt}"`
                         }]
                     }]
                 };
@@ -834,6 +860,7 @@
         }
 
         async function generateJarvisImage(promptText, inputImageBase64 = null, inputImageMime = null) {
+            const lowerPrompt = promptText.toLowerCase();
             const styleChoice = imageStyleSelect ? imageStyleSelect.value : 'photorealistic';
             const styleBoostMap = {
                 photorealistic: "ultra-realistic photography, 8k resolution, natural lighting, sharp focus",
@@ -841,10 +868,11 @@
                 anime: "high-budget modern anime movie style, Makoto Shinkai lighting, detailed vibrant illustration",
                 "3d": "Unreal Engine 5 3D render, volumetric lighting, futuristic Stark holographic studio quality"
             };
-            const styleSuffix = styleBoostMap[styleChoice] || styleBoostMap.photorealistic;
+            // Jika user secara spesifik meminta "anime", otomatis pakai gaya anime meskipun dropdown sedang di foto realistis
+            const effectiveStyle = lowerPrompt.includes('anime') ? styleBoostMap.anime : (styleBoostMap[styleChoice] || styleBoostMap.photorealistic);
 
             const englishPrompt = await translatePromptToEnglish(promptText);
-            const finalPrompt = `${englishPrompt}, ${styleSuffix}`;
+            const finalPrompt = `${englishPrompt}, ${effectiveStyle}`;
             const modelsToTry = ["gemini-3.1-flash-image", "gemini-3.1-flash-lite-image"];
 
             for (let i = 0; i < modelsToTry.length; i++) {
@@ -974,9 +1002,9 @@
             };
 
             const strategies = [
+                { model: "gemini-3-flash-preview", search: true },
                 { model: "gemini-3-flash-preview", search: false },
-                { model: "gemini-2.5-flash", search: false },
-                { model: "gemini-3-flash-preview", search: true }
+                { model: "gemini-2.5-flash", search: false }
             ];
 
             let lastErrorMsg = "";
