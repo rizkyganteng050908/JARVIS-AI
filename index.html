@@ -660,30 +660,30 @@
         // 6. DETEKSI & GENERATOR GAMBAR (GEMINI IMAGE)
         // ==========================================
         function isImageRequest(text) {
-            const lower = text.toLowerCase();
-            // Deteksi kata kerja pembuatan + objek gambar/foto/ilustrasi
-            const actionWords = ['buat', 'bikin', 'gambar', 'lukis', 'render', 'generate', 'ciptakan', 'tampilkan', 'cariin foto', 'kasih foto', 'kasih gambar', 'ilustrasi'];
-            const nounWords = ['gambar', 'foto', 'ilustrasi', 'lukisan', 'poster', 'wallpaper', 'avatar', 'sketsa', 'desain', 'visual', 'potret'];
-            
-            const hasAction = actionWords.some(w => lower.includes(w));
-            const hasNoun = nounWords.some(w => lower.includes(w));
+            const lower = text.toLowerCase().trim();
+            const visualKeywords = ['gambar', 'foto', 'ilustrasi', 'lukisan', 'poster', 'wallpaper', 'avatar', 'sketsa', 'potret', 'gambarin', 'lukisin', 'fotonin'];
+            const chatOnlyTriggers = ['apakah gambar', 'kenapa gambar', 'gimana cara', 'bagaimana cara', 'maksud gambar', 'jelasin gambar', 'jelaskan gambar'];
 
-            // Jika mengandung kata kunci gambar/foto yang jelas sebagai permintaan visual
-            if (hasAction && hasNoun) return true;
-            if (lower.startsWith('gambar ') || lower.startsWith('foto ') || lower.startsWith('/gambar ') || lower.startsWith('/foto ')) return true;
-            
+            if (chatOnlyTriggers.some(c => lower.includes(c))) return false;
+            if (visualKeywords.some(k => new RegExp(`\\b${k}\\b`, 'i').test(lower))) return true;
+            if (lower.startsWith('/gambar') || lower.startsWith('/foto')) return true;
+
             return false;
         }
 
         function extractImagePrompt(rawText) {
             let cleaned = rawText
                 .replace(/^\/(gambar|foto)\s+/i, '')
-                .replace(/^(tolong\s+)?(jarvis\s+|jarv\s+|bos\s+)?(coba\s+)?(buatin|buatkan|bikin|bikinin|gambarin|gambarkan|render|generate|ciptakan|kasih|tampilkan)\s+(saya\s+|aku\s+|dong\s+)?(sebuah\s+)?(gambar|foto|ilustrasi|lukisan|wallpaper|potret)\s*(tentang|berupa|yang)?\s*/i, '')
+                .replace(/^(jarvis|jarv|bos|bro|hey|hai|halo)[,\s]*/i, '')
+                .replace(/^(tolong|coba|bisa|mau|minta|plis|please)\s+/gi, '')
+                .replace(/^(buatin|buatkan|buat|bikin|bikinin|gambarin|gambarkan|render|generate|ciptakan|kasih|tampilkan|tunjukin|tunjukkan|cariin|carikan)\s+/i, '')
+                .replace(/^(saya|aku|gue|gw|dong|deh|ya|nih|satu|sebuah)\s+/gi, '')
+                .replace(/^(gambar|foto|ilustrasi|lukisan|wallpaper|potret|avatar|poster)\s*/i, '')
+                .replace(/^(tentang|berupa|yang|dengan|ala|gaya)\s+/i, '')
                 .trim();
 
-            // Jika user hanya bilang "buatin gambar random" atau "foto acak" tanpa detail
-            const randomKeywords = ['random', 'acak', 'apa aja', 'apa saja', 'bebas', 'kejutan', 'terserah'];
-            if (!cleaned || cleaned.length < 4 || randomKeywords.some(k => cleaned.toLowerCase() === k || cleaned.toLowerCase() === `yang ${k}`)) {
+            const randomKeywords = ['random', 'acak', 'apa aja', 'apa saja', 'bebas', 'kejutan', 'terserah', 'lain', 'baru'];
+            if (!cleaned || cleaned.length < 3 || randomKeywords.includes(cleaned.toLowerCase())) {
                 const randomIdea = RANDOM_PHOTO_IDEAS[Math.floor(Math.random() * RANDOM_PHOTO_IDEAS.length)];
                 return { prompt: randomIdea, isRandom: true };
             }
@@ -691,7 +691,36 @@
             return { prompt: cleaned, isRandom: false };
         }
 
+        async function translatePromptToEnglish(indonesianPrompt) {
+            try {
+                const url = `https://generativelanguage.googleapis.com/v1beta/models/${textModelName}:generateContent?key=${apiKey}`;
+                const payload = {
+                    contents: [{
+                        role: "user",
+                        parts: [{
+                            text: `Translate and expand this image description into a clear, vivid, accurate English image-generation prompt (max 35 words). Keep every specific subject, style, color, and action requested by the user. Output ONLY the English prompt without quotes or extra explanation:\n\n"${indonesianPrompt}"`
+                        }]
+                    }],
+                    generationConfig: { temperature: 0.4 }
+                };
+                const res = await fetch(url, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(payload)
+                });
+                if (res.ok) {
+                    const data = await res.json();
+                    const translated = data?.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
+                    if (translated) return translated;
+                }
+            } catch (e) {
+                // Abaikan jika offline/tanpa API key dan gunakan prompt asli
+            }
+            return indonesianPrompt;
+        }
+
         async function generateJarvisImage(promptText) {
+            const englishPrompt = await translatePromptToEnglish(promptText);
             const modelsToTry = ["gemini-3.1-flash-image", "gemini-3.1-flash-lite-image"];
             let lastError = "";
 
@@ -702,7 +731,7 @@
                     const payload = {
                         contents: [{
                             role: "user",
-                            parts: [{ text: `Buat gambar berkualitas tinggi, detail tajam, pencahayaan sinematik: ${promptText}` }]
+                            parts: [{ text: `High quality, detailed, accurate visual representation of: ${englishPrompt}` }]
                         }],
                         generationConfig: {
                             responseModalities: ["IMAGE"]
@@ -727,7 +756,8 @@
                         const mimeType = part.inlineData.mimeType || "image/png";
                         return {
                             url: `data:${mimeType};base64,${part.inlineData.data}`,
-                            source: "GEMINI HOLO-ENGINE"
+                            source: "GEMINI HOLO-ENGINE",
+                            usedPrompt: promptText
                         };
                     } else {
                         throw new Error("Data visual tidak ditemukan dalam respons satelit.");
@@ -741,7 +771,7 @@
             // Jalur Cadangan Otomatis Tanpa API Key (jika dijalankan secara lokal tanpa kunci Gemini)
             try {
                 const seed = Math.floor(Math.random() * 1000000);
-                const encodedPrompt = encodeURIComponent(promptText);
+                const encodedPrompt = encodeURIComponent(englishPrompt);
                 const fallbackUrl = `https://image.pollinations.ai/prompt/${encodedPrompt}?width=1024&height=1024&seed=${seed}&nologo=true`;
                 
                 // Verifikasi gambar berhasil dimuat
@@ -755,7 +785,8 @@
 
                 return {
                     url: fallbackUrl,
-                    source: "STARK AUXILIARY SATELLITE (NO-KEY MODE)"
+                    source: "STARK AUXILIARY SATELLITE (NO-KEY MODE)",
+                    usedPrompt: promptText
                 };
             } catch (fallbackErr) {
                 throw new Error(lastError || fallbackErr.message);
