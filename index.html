@@ -725,7 +725,10 @@
 
                     if (part && part.inlineData && part.inlineData.data) {
                         const mimeType = part.inlineData.mimeType || "image/png";
-                        return `data:${mimeType};base64,${part.inlineData.data}`;
+                        return {
+                            url: `data:${mimeType};base64,${part.inlineData.data}`,
+                            source: "GEMINI HOLO-ENGINE"
+                        };
                     } else {
                         throw new Error("Data visual tidak ditemukan dalam respons satelit.");
                     }
@@ -735,7 +738,28 @@
                 }
             }
 
-            throw new Error(lastError);
+            // Jalur Cadangan Otomatis Tanpa API Key (jika dijalankan secara lokal tanpa kunci Gemini)
+            try {
+                const seed = Math.floor(Math.random() * 1000000);
+                const encodedPrompt = encodeURIComponent(promptText);
+                const fallbackUrl = `https://image.pollinations.ai/prompt/${encodedPrompt}?width=1024&height=1024&seed=${seed}&nologo=true`;
+                
+                // Verifikasi gambar berhasil dimuat
+                await new Promise((resolve, reject) => {
+                    const testImg = new Image();
+                    testImg.crossOrigin = "anonymous";
+                    testImg.onload = () => resolve(true);
+                    testImg.onerror = () => reject(new Error("Gagal memuat jalur cadangan"));
+                    testImg.src = fallbackUrl;
+                });
+
+                return {
+                    url: fallbackUrl,
+                    source: "STARK AUXILIARY SATELLITE (NO-KEY MODE)"
+                };
+            } catch (fallbackErr) {
+                throw new Error(lastError || fallbackErr.message);
+            }
         }
 
         function triggerRandomPhoto() {
@@ -872,7 +896,7 @@
             chatContainer.scrollTop = chatContainer.scrollHeight;
         }
 
-        function appendImageMessage(imageUrl, promptUsed, captionText) {
+        function appendImageMessage(imageUrl, promptUsed, captionText, engineSource = "HD RENDER") {
             const wrapper = document.createElement('div');
             wrapper.className = 'flex items-start gap-3';
             
@@ -886,7 +910,7 @@
                 <div class="bg-slate-900/80 border border-purple-500/40 rounded-2xl rounded-tl-none p-3.5 max-w-[88%] sm:max-w-[75%] text-sm sm:text-base leading-relaxed text-cyan-50 shadow-[0_0_20px_rgba(168,85,247,0.15)] space-y-2.5">
                     <div class="flex items-center justify-between gap-2">
                         <span class="text-[11px] font-orbitron text-purple-300">J.A.R.V.I.S. // HOLO-PROJECTION</span>
-                        <span class="text-[10px] font-orbitron px-2 py-0.5 rounded bg-purple-500/20 text-purple-200 border border-purple-400/30">HD RENDER</span>
+                        <span class="text-[10px] font-orbitron px-2 py-0.5 rounded bg-purple-500/20 text-purple-200 border border-purple-400/30">${engineSource}</span>
                     </div>
                     <p>${safeCaption}</p>
                     <div class="relative group rounded-xl overflow-hidden border border-cyan-500/30 bg-slate-950">
@@ -895,7 +919,7 @@
                             <button onclick="openImageModal('${imageUrl}', '${escapedPrompt}')" class="px-2.5 py-1.5 rounded-lg bg-slate-950/85 border border-cyan-400/50 text-cyan-300 hover:bg-cyan-500 hover:text-slate-950 text-xs font-orbitron flex items-center gap-1 cursor-pointer" title="Perbesar">
                                 <i class="fas fa-expand"></i>
                             </button>
-                            <a href="${imageUrl}" download="JARVIS-Foto-${Date.now()}.png" class="px-2.5 py-1.5 rounded-lg bg-slate-950/85 border border-purple-400/50 text-purple-300 hover:bg-purple-500 hover:text-white text-xs font-orbitron flex items-center gap-1" title="Unduh Foto">
+                            <a href="${imageUrl}" target="_blank" download="JARVIS-Foto-${Date.now()}.png" class="px-2.5 py-1.5 rounded-lg bg-slate-950/85 border border-purple-400/50 text-purple-300 hover:bg-purple-500 hover:text-white text-xs font-orbitron flex items-center gap-1" title="Unduh Foto">
                                 <i class="fas fa-download"></i> UNDUH
                             </a>
                         </div>
@@ -957,7 +981,7 @@
                 const { prompt, isRandom } = extractImagePrompt(trimmed);
 
                 try {
-                    const imageUrl = await generateJarvisImage(prompt);
+                    const renderResult = await generateJarvisImage(prompt);
                     const typingEl = document.getElementById(typingId);
                     if (typingEl) typingEl.remove();
 
@@ -965,7 +989,7 @@
                         ? "Beres Bos! Ini hasil render foto random kejutan dari sistem Holo-Projection saya. Keren kan?"
                         : "Siap Bos! Proyeksi visual sesuai permintaan sudah selesai dirender. Silakan dicek atau diunduh ya!";
 
-                    appendImageMessage(imageUrl, prompt, caption);
+                    appendImageMessage(renderResult.url, prompt, caption, renderResult.source);
                     
                     // Simpan konteks ke memori chat agar JARVIS ingat baru saja membuat gambar
                     chatHistory.push({
