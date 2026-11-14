@@ -1063,6 +1063,48 @@
             chatContainer.scrollTop = chatContainer.scrollHeight;
         }
 
+        function appendImageMessage(imageUrl, prompt, caption, sourceLabel = "GEMINI HOLO-ENGINE") {
+            const wrapper = document.createElement('div');
+            wrapper.className = 'flex items-start gap-3';
+
+            const safePrompt = prompt.replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+            const card = document.createElement('div');
+            card.className = 'bg-cyan-950/70 border border-purple-400/40 rounded-2xl rounded-tl-none p-3.5 max-w-[88%] text-sm sm:text-base leading-relaxed text-cyan-50 shadow-[0_0_20px_rgba(168,85,247,0.18)] space-y-2.5';
+
+            card.innerHTML = `
+                <div class="flex items-center justify-between gap-2 text-[10px] font-orbitron">
+                    <span class="text-purple-300"><i class="fas fa-cube mr-1"></i>J.A.R.V.I.S. // ${sourceLabel}</span>
+                    <span class="text-cyan-400/70">HOLO-RENDER</span>
+                </div>
+                <p class="text-sm text-cyan-50">${formatMessageText(caption)}</p>
+                <div class="relative group rounded-xl overflow-hidden border border-cyan-400/40 bg-slate-950 cursor-pointer" data-img-url="${imageUrl}" data-img-caption="${safePrompt}">
+                    <img src="${imageUrl}" alt="${safePrompt}" class="w-full max-h-80 object-cover transition duration-300 group-hover:scale-[1.02]">
+                    <div class="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition flex items-end justify-between p-3">
+                        <span class="text-[11px] font-orbitron text-cyan-300"><i class="fas fa-expand mr-1"></i>PERBESAR HOLOGRAM</span>
+                    </div>
+                </div>
+                <div class="flex items-center justify-between gap-2 pt-1 text-xs">
+                    <span class="text-cyan-300/70 italic truncate max-w-[65%]" title="${safePrompt}">"${prompt}"</span>
+                    <a href="${imageUrl}" download="JARVIS-Holo-${Date.now()}.png" class="px-3 py-1.5 rounded-lg bg-cyan-500/20 hover:bg-cyan-500/40 border border-cyan-400/50 text-cyan-200 font-orbitron text-[10px] tracking-wider flex items-center gap-1.5 shrink-0 transition">
+                        <i class="fas fa-download"></i> UNDUH
+                    </a>
+                </div>
+            `;
+
+            const imgBox = card.querySelector('[data-img-url]');
+            imgBox.addEventListener('click', () => openImageModal(imageUrl, prompt));
+
+            wrapper.innerHTML = `
+                <div class="w-8 h-8 rounded-lg bg-purple-500/20 border border-purple-400 flex items-center justify-center shrink-0 mt-1">
+                    <i class="fas fa-robot text-purple-300 text-sm"></i>
+                </div>
+            `;
+            wrapper.appendChild(card);
+
+            chatContainer.appendChild(wrapper);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+
         function openImageModal(imageUrl, caption) {
             const modal = document.getElementById('image-preview-modal');
             const fullImg = document.getElementById('modal-full-img');
