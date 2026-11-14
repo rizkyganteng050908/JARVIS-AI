@@ -235,9 +235,9 @@
             </div>
             <div class="flex items-center justify-between gap-2 pt-1">
                 <p id="modal-img-caption" class="text-xs text-cyan-200/80 truncate flex-1"></p>
-                <a id="modal-download-btn" href="#" download="JARVIS-Render.png" class="px-4 py-2 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-orbitron font-bold text-xs tracking-wider flex items-center gap-2 shrink-0">
+                <button id="modal-download-btn" type="button" class="px-4 py-2 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-orbitron font-bold text-xs tracking-wider flex items-center gap-2 shrink-0 cursor-pointer">
                     <i class="fas fa-download"></i> UNDUH FOTO
-                </a>
+                </button>
             </div>
         </div>
     </div>
@@ -449,47 +449,44 @@
         // ==========================================
         // 1B. SCI-FI HUD SOUND EFFECTS (WEB AUDIO API)
         // ==========================================
-        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        let audioCtx = null;
         function playHudBeep(type = 'click') {
             try {
+                if (!audioCtx) {
+                    const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+                    if (AudioContextClass) audioCtx = new AudioContextClass();
+                }
+                if (!audioCtx) return;
                 if (audioCtx.state === 'suspended') audioCtx.resume();
                 const osc = audioCtx.createOscillator();
                 const gain = audioCtx.createGain();
                 osc.connect(gain);
                 gain.connect(audioCtx.destination);
-
                 const now = audioCtx.currentTime;
+
                 if (type === 'send') {
                     osc.type = 'sine';
                     osc.frequency.setValueAtTime(520, now);
-                    osc.frequency.exponentialRampToValueAtTime(980, now + 0.12);
-                    gain.gain.setValueAtTime(0.08, now);
+                    osc.frequency.exponentialRampToValueAtTime(880, now + 0.08);
+                    gain.gain.setValueAtTime(0.06, now);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.09);
+                    osc.start(now);
+                    osc.stop(now + 0.09);
+                } else if (type === 'receive' || type === 'render') {
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(660, now);
+                    osc.frequency.exponentialRampToValueAtTime(1040, now + 0.12);
+                    gain.gain.setValueAtTime(0.07, now);
                     gain.gain.exponentialRampToValueAtTime(0.001, now + 0.14);
                     osc.start(now);
                     osc.stop(now + 0.14);
-                } else if (type === 'receive') {
-                    osc.type = 'triangle';
-                    osc.frequency.setValueAtTime(880, now);
-                    osc.frequency.exponentialRampToValueAtTime(620, now + 0.16);
-                    gain.gain.setValueAtTime(0.08, now);
-                    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.18);
-                    osc.start(now);
-                    osc.stop(now + 0.18);
-                } else if (type === 'render') {
-                    osc.type = 'sine';
-                    osc.frequency.setValueAtTime(440, now);
-                    osc.frequency.exponentialRampToValueAtTime(1320, now + 0.25);
-                    gain.gain.setValueAtTime(0.09, now);
-                    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.28);
-                    osc.start(now);
-                    osc.stop(now + 0.28);
                 } else {
                     osc.type = 'sine';
-                    osc.frequency.setValueAtTime(750, now);
-                    gain.gain.setValueAtTime(0.05, now);
-                    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.06);
+                    osc.frequency.setValueAtTime(740, now);
+                    gain.gain.setValueAtTime(0.04, now);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.05);
                     osc.start(now);
-                    osc.stop(now + 0.06);
+                    osc.stop(now + 0.05);
                 }
             } catch (e) {}
         }
@@ -513,49 +510,50 @@
         const closeApiModal = document.getElementById('close-api-modal');
         const saveApiBtn = document.getElementById('save-api-btn');
         const customApiInput = document.getElementById('custom-api-input');
-        const themeToggleBtn = document.getElementById('theme-toggle-btn');
         const imageStyleSelect = document.getElementById('image-style-select');
+        const themeToggleBtn = document.getElementById('theme-toggle-btn');
         const imageUploadInput = document.getElementById('image-upload-input');
         const attachmentPreviewBar = document.getElementById('attachment-preview-bar');
         const attachmentThumb = document.getElementById('attachment-thumb');
 
-        // Kontrol Ganti Protokol Tema
+        // Ganti Tema Protokol Armor
         themeToggleBtn.addEventListener('click', () => {
             isCombatMode = !isCombatMode;
             document.body.classList.toggle('combat-mode', isCombatMode);
-            playHudBeep('render');
-            showNotification(isCombatMode ? 'PROTOKOL HULKBUSTER (RED-GOLD) DIAKTIFKAN!' : 'PROTOKOL MARK LXXXV (CYAN) DIAKTIFKAN!');
+            playHudBeep('click');
+            showNotification(isCombatMode ? 'Protokol Hulkbuster Red-Gold diaktifkan!' : 'Kembali ke Protokol Mark LXXXV Cyan.');
         });
 
-        // Kontrol Upload Gambar untuk Vision Scanner
+        // Kontrol Lampiran Foto (Vision Scanner)
         imageUploadInput.addEventListener('change', (e) => {
-            const file = e.target.files[0];
+            const file = e.target.files?.[0];
             if (!file) return;
             const reader = new FileReader();
             reader.onload = () => {
                 const dataUrl = reader.result;
-                attachedImageMime = file.type || 'image/png';
                 attachedImageBase64 = dataUrl.split(',')[1];
+                attachedImageMime = file.type || 'image/png';
                 attachmentThumb.src = dataUrl;
                 attachmentPreviewBar.classList.remove('hidden');
-                playHudBeep('send');
-                userInput.focus();
+                playHudBeep('click');
+                showNotification('Foto berhasil dimuat ke Vision Scanner!');
             };
             reader.readAsDataURL(file);
-            e.target.value = '';
         });
 
         function clearAttachedImage() {
             attachedImageBase64 = null;
             attachedImageMime = null;
-            attachmentPreviewBar.classList.add('hidden');
             attachmentThumb.src = '';
+            imageUploadInput.value = '';
+            attachmentPreviewBar.classList.add('hidden');
         }
 
         // Kontrol Modal API Key
         apiKeyBtn.addEventListener('click', () => {
             customApiInput.value = apiKey;
             apiModal.classList.remove('hidden');
+            playHudBeep('click');
         });
         closeApiModal.addEventListener('click', () => apiModal.classList.add('hidden'));
         saveApiBtn.addEventListener('click', () => {
@@ -566,6 +564,7 @@
                 localStorage.removeItem('jarvis_gemini_api_key');
             }
             apiModal.classList.add('hidden');
+            playHudBeep('click');
             showNotification(apiKey ? 'Kunci akses satelit berhasil disimpan permanen, Bos!' : 'Kunci dihapus, kembali ke jalur default.');
         });
 
@@ -604,6 +603,14 @@
                 sysStatus.textContent = 'AUDIO INPUT ACTIVE';
                 sysStatus.className = 'font-orbitron text-red-400 font-semibold';
                 startEqualizer(true);
+            } else if (state === 'rendering') {
+                reactorCore.classList.add('core-rendering');
+                coreIcon.className = 'fas fa-wand-magic-sparkles fa-spin text-2xl sm:text-3xl text-purple-300';
+                coreLabel.textContent = 'RENDERING';
+                coreLabel.className = 'text-[10px] font-orbitron tracking-widest text-purple-200 mt-1';
+                sysStatus.textContent = 'HOLO-RENDERING...';
+                sysStatus.className = 'font-orbitron text-purple-400 font-semibold';
+                startEqualizer(true);
             } else if (state === 'processing') {
                 reactorCore.classList.add('core-idle');
                 coreIcon.className = 'fas fa-microchip fa-spin text-2xl sm:text-3xl text-amber-300';
@@ -611,14 +618,6 @@
                 coreLabel.className = 'text-[10px] font-orbitron tracking-widest text-amber-200 mt-1';
                 sysStatus.textContent = 'PROCESSING DATA...';
                 sysStatus.className = 'font-orbitron text-amber-400 font-semibold';
-                startEqualizer(true);
-            } else if (state === 'rendering') {
-                reactorCore.classList.add('core-rendering');
-                coreIcon.className = 'fas fa-wand-magic-sparkles fa-pulse text-2xl sm:text-3xl text-purple-300';
-                coreLabel.textContent = 'RENDERING';
-                coreLabel.className = 'text-[10px] font-orbitron tracking-widest text-purple-200 mt-1';
-                sysStatus.textContent = 'HOLO-SYNTHESIS ACTIVE';
-                sysStatus.className = 'font-orbitron text-purple-400 font-semibold';
                 startEqualizer(true);
             } else if (state === 'speaking') {
                 reactorCore.classList.add('core-speaking');
@@ -636,6 +635,120 @@
                 sysStatus.textContent = 'ONLINE // READY';
                 sysStatus.className = 'font-orbitron text-emerald-400 font-semibold';
                 startEqualizer(false);
+            }
+        }
+
+        async function renderJarvisVisual(promptText, inputImageBase64 = null, inputImageMime = null) {
+            const lowerPrompt = promptText.toLowerCase();
+            const styleChoice = imageStyleSelect ? imageStyleSelect.value : 'photorealistic';
+            const styleBoostMap = {
+                photorealistic: "ultra-realistic photography, 8k resolution, natural lighting, sharp focus",
+                cyberpunk: "cyberpunk sci-fi aesthetic, glowing neon cyan and magenta lights, futuristic rain reflections",
+                anime: "high-budget modern anime movie style, Makoto Shinkai lighting, detailed vibrant illustration",
+                "3d": "Unreal Engine 5 3D render, volumetric lighting, futuristic Stark holographic studio quality"
+            };
+            const effectiveStyle = lowerPrompt.includes('anime') ? styleBoostMap.anime : (styleBoostMap[styleChoice] || styleBoostMap.photorealistic);
+
+            const englishPrompt = await translatePromptToEnglish(promptText);
+            const finalPrompt = `${englishPrompt}, ${effectiveStyle}`;
+            const modelsToTry = ["gemini-3.1-flash-image-preview", "gemini-2.5-flash-image-preview", "gemini-3.1-flash-image"];
+
+            if (apiKey) {
+                for (let i = 0; i < modelsToTry.length; i++) {
+                    const targetModel = modelsToTry[i];
+                    try {
+                        const url = `https://generativelanguage.googleapis.com/v1beta/models/${targetModel}:generateContent?key=${apiKey}`;
+                        const userParts = [{
+                            text: inputImageBase64
+                                ? `Edit or transform this image according to instruction: ${finalPrompt}`
+                                : `Generate a detailed, accurate image of: ${finalPrompt}`
+                        }];
+                        if (inputImageBase64) {
+                            userParts.push({
+                                inlineData: {
+                                    mimeType: inputImageMime || "image/png",
+                                    data: inputImageBase64
+                                }
+                            });
+                        }
+                        const payload = {
+                            contents: [{
+                                role: "user",
+                                parts: userParts
+                            }],
+                            generationConfig: {
+                                responseModalities: ["TEXT", "IMAGE"]
+                            }
+                        };
+
+                        const response = await fetch(url, {
+                            method: "POST",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify(payload)
+                        });
+
+                        if (!response.ok) {
+                            const errData = await response.json().catch(() => null);
+                            throw new Error(errData?.error?.message || `HTTP ${response.status}`);
+                        }
+
+                        const result = await response.json();
+                        const part = result?.candidates?.[0]?.content?.parts?.find(p => p.inlineData && p.inlineData.data);
+
+                        if (part) {
+                            const mimeType = part.inlineData.mimeType || "image/png";
+                            return {
+                                url: `data:${mimeType};base64,${part.inlineData.data}`,
+                                source: "GEMINI HOLO-ENGINE",
+                                usedPrompt: promptText
+                            };
+                        } else {
+                            throw new Error("Data visual kosong dari respons satelit.");
+                        }
+                    } catch (err) {
+                        await new Promise(res => setTimeout(res, 300));
+                    }
+                }
+            }
+
+            // Jalur Cadangan Otomatis Tanpa API Key (Langsung dirender ke <img> tanpa pemblokir CORS)
+            const seed = Math.floor(Math.random() * 9999999);
+            const encodedPrompt = encodeURIComponent(finalPrompt.slice(0, 220));
+            const fallbackUrl = `https://image.pollinations.ai/prompt/${encodedPrompt}?width=1024&height=1024&seed=${seed}&nologo=true&model=flux`;
+
+            return {
+                url: fallbackUrl,
+                source: "STARK AUXILIARY SATELLITE",
+                usedPrompt: promptText
+            };
+        }
+
+        async function downloadImageSafe(imageUrl, filename = `JARVIS-Holo-${Date.now()}.png`) {
+            try {
+                showNotification('Menyiapkan unduhan file hologram...');
+                if (imageUrl.startsWith('data:')) {
+                    const a = document.createElement('a');
+                    a.href = imageUrl;
+                    a.download = filename;
+                    document.body.appendChild(a);
+                    a.click();
+                    a.remove();
+                    return;
+                }
+                const response = await fetch(imageUrl);
+                const blob = await response.blob();
+                const blobUrl = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = blobUrl;
+                a.download = filename;
+                document.body.appendChild(a);
+                a.click();
+                a.remove();
+                setTimeout(() => URL.revokeObjectURL(blobUrl), 5000);
+                showNotification('Foto berhasil diunduh ke perangkat Anda, Bos!');
+            } catch (err) {
+                window.open(imageUrl, '_blank', 'noopener,noreferrer');
+                showNotification('Membuka gambar di tab baru untuk disimpan manual.');
             }
         }
 
@@ -1108,14 +1221,16 @@
                 </div>
                 <div class="flex items-center justify-between gap-2 pt-1 text-xs">
                     <span class="text-cyan-300/70 italic truncate max-w-[65%]" title="${safePrompt}">"${prompt}"</span>
-                    <a href="${imageUrl}" download="JARVIS-Holo-${Date.now()}.png" class="px-3 py-1.5 rounded-lg bg-cyan-500/20 hover:bg-cyan-500/40 border border-cyan-400/50 text-cyan-200 font-orbitron text-[10px] tracking-wider flex items-center gap-1.5 shrink-0 transition">
+                    <button type="button" class="download-card-btn px-3 py-1.5 rounded-lg bg-cyan-500/20 hover:bg-cyan-500/40 border border-cyan-400/50 text-cyan-200 font-orbitron text-[10px] tracking-wider flex items-center gap-1.5 shrink-0 transition cursor-pointer">
                         <i class="fas fa-download"></i> UNDUH
-                    </a>
+                    </button>
                 </div>
             `;
 
             const imgBox = card.querySelector('[data-img-url]');
             imgBox.addEventListener('click', () => openImageModal(imageUrl, prompt));
+            const downloadCardBtn = card.querySelector('.download-card-btn');
+            downloadCardBtn.addEventListener('click', () => downloadImageSafe(imageUrl, `JARVIS-Holo-${Date.now()}.png`));
 
             wrapper.innerHTML = `
                 <div class="w-8 h-8 rounded-lg bg-purple-500/20 border border-purple-400 flex items-center justify-center shrink-0 mt-1">
@@ -1136,7 +1251,7 @@
 
             fullImg.src = imageUrl;
             captionEl.textContent = caption;
-            downloadBtn.href = imageUrl;
+            downloadBtn.onclick = () => downloadImageSafe(imageUrl, `JARVIS-Render-${Date.now()}.png`);
             modal.classList.remove('hidden');
             playHudBeep('click');
         }
@@ -1205,7 +1320,7 @@
                 const { prompt, isRandom } = extractImagePrompt(trimmed || "Ubah menjadi gaya futuristik Stark HUD");
 
                 try {
-                    const renderResult = await generateJarvisImage(prompt, currentImgB64, currentImgMime);
+                    const renderResult = await renderJarvisVisual(prompt, currentImgB64, currentImgMime);
                     const typingEl = document.getElementById(typingId);
                     if (typingEl) typingEl.remove();
 
