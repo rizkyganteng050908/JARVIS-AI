@@ -20,11 +20,24 @@
             --jarvis-alert: #ff3b30;
         }
 
+        body.combat-mode {
+            --jarvis-cyan: #ffaa00;
+            --jarvis-blue: #ff3b30;
+            --jarvis-dark: #120404;
+            --jarvis-panel: rgba(42, 10, 10, 0.78);
+            --jarvis-border: rgba(255, 170, 0, 0.35);
+            background-image: 
+                radial-gradient(circle at 50% 50%, rgba(255, 59, 48, 0.16) 0%, transparent 70%),
+                linear-gradient(rgba(255, 170, 0, 0.04) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 170, 0, 0.04) 1px, transparent 1px);
+        }
+
         body {
             background-color: var(--jarvis-dark);
             color: #e0f7fa;
             font-family: 'Rajdhani', sans-serif;
             overflow-x: hidden;
+            transition: background-color 0.4s ease, color 0.4s ease;
             background-image: 
                 radial-gradient(circle at 50% 50%, rgba(0, 102, 255, 0.12) 0%, transparent 70%),
                 linear-gradient(rgba(0, 243, 255, 0.03) 1px, transparent 1px),
@@ -175,6 +188,11 @@
                 <span class="text-cyan-400/70">LOCAL TIME</span>
                 <span id="hud-clock" class="font-orbitron text-cyan-200">00:00:00</span>
             </div>
+            <!-- Tombol Ganti Tema / Protokol -->
+            <button id="theme-toggle-btn" class="hud-panel px-3 py-2 rounded-lg flex items-center gap-2 text-cyan-300 hover:bg-cyan-500/20 transition cursor-pointer" title="Ganti Protokol Armor (Cyan / Combat Red-Gold)">
+                <i id="theme-icon" class="fas fa-shield-halved text-cyan-400"></i>
+                <span class="hidden md:inline font-semibold">PROTOKOL</span>
+            </button>
             <!-- Tombol Pengaturan API Key -->
             <button id="api-key-btn" class="hud-panel px-3 py-2 rounded-lg flex items-center gap-2 text-cyan-300 hover:bg-cyan-500/20 transition cursor-pointer" title="Atur API Key Gemini Manual">
                 <i class="fas fa-key text-amber-400"></i>
@@ -283,10 +301,15 @@
             </div>
 
             <!-- Quick Commands / Diagnostic Box -->
-            <div class="hud-panel hud-corner rounded-xl p-4">
-                <div class="flex items-center justify-between mb-2">
-                    <span class="text-xs font-orbitron text-cyan-400 tracking-wider"><i class="fas fa-bolt mr-1"></i> PERINTAH CEPAT & VISUAL</span>
-                    <span class="text-[10px] text-cyan-500">TAP TO EXECUTE</span>
+            <div class="hud-panel hud-corner rounded-xl p-4 space-y-3">
+                <div class="flex items-center justify-between">
+                    <span class="text-xs font-orbitron text-cyan-400 tracking-wider"><i class="fas fa-sliders mr-1"></i> GAYA RENDER & PERINTAH CEPAT</span>
+                    <select id="image-style-select" class="bg-slate-950 border border-cyan-500/40 rounded-lg px-2 py-1 text-[11px] font-orbitron text-cyan-300 focus:outline-none cursor-pointer" title="Pilih Gaya Foto/Gambar">
+                        <option value="photorealistic">GAYA: FOTO REALISTIS</option>
+                        <option value="cyberpunk">GAYA: CYBERPUNK NEON</option>
+                        <option value="anime">GAYA: ANIME SINEMATIK</option>
+                        <option value="3d">GAYA: 3D RENDER FUTURISTIK</option>
+                    </select>
                 </div>
                 <div class="grid grid-cols-2 gap-2 text-xs">
                     <button onclick="triggerRandomPhoto()" class="text-left p-2 rounded bg-purple-950/50 border border-purple-500/40 hover:bg-purple-500/20 hover:border-purple-400 text-purple-200 transition truncate cursor-pointer">
@@ -298,8 +321,8 @@
                     <button onclick="sendQuickPrompt('Buatin foto astronot lagi ngopi santai di bulan')" class="text-left p-2 rounded bg-cyan-950/50 border border-cyan-500/30 hover:bg-cyan-500/20 hover:border-cyan-400 transition truncate cursor-pointer">
                         <i class="fas fa-image mr-1 text-cyan-400"></i> Astronot Ngopi di Bulan
                     </button>
-                    <button onclick="sendQuickPrompt('Halo Jarvis, gimana kabar hari ini?')" class="text-left p-2 rounded bg-cyan-950/50 border border-cyan-500/30 hover:bg-cyan-500/20 hover:border-cyan-400 transition truncate cursor-pointer">
-                        <i class="fas fa-comment mr-1 text-cyan-400"></i> "Gimana kabar hari ini?"
+                    <button onclick="sendQuickPrompt('Kasih motivasi singkat ala Tony Stark dong Jarv')" class="text-left p-2 rounded bg-cyan-950/50 border border-cyan-500/30 hover:bg-cyan-500/20 hover:border-cyan-400 transition truncate cursor-pointer">
+                        <i class="fas fa-bolt mr-1 text-amber-400"></i> Motivasi Ala Stark
                     </button>
                 </div>
             </div>
@@ -339,23 +362,41 @@
                 <button onclick="hideNotification()" class="text-amber-300 hover:text-white ml-2"><i class="fas fa-times"></i></button>
             </div>
 
+            <!-- Preview Lampiran Gambar (Vision Scanner) -->
+            <div id="attachment-preview-bar" class="hidden px-4 py-2 bg-slate-900/90 border-t border-cyan-500/30 flex items-center justify-between gap-3">
+                <div class="flex items-center gap-2.5 overflow-hidden">
+                    <img id="attachment-thumb" src="" alt="Preview" class="w-10 h-10 rounded-lg object-cover border border-cyan-400/50 shrink-0">
+                    <div class="text-xs truncate">
+                        <div class="font-orbitron text-cyan-300 text-[10px]">VISION SCANNER READY</div>
+                        <div class="text-cyan-100/70 truncate">Ketik perintah untuk analisis foto atau ubah/edit foto ini</div>
+                    </div>
+                </div>
+                <button type="button" onclick="clearAttachedImage()" class="text-red-400 hover:text-red-300 px-2 py-1 text-xs cursor-pointer" title="Hapus lampiran">
+                    <i class="fas fa-times-circle"></i>
+                </button>
+            </div>
+
             <!-- Input Area -->
             <div class="p-3 sm:p-4 border-t border-cyan-500/30 bg-cyan-950/40">
-                <form id="chat-form" class="flex items-center gap-2 sm:gap-2.5">
-                    <button type="button" id="mic-btn" class="w-11 h-11 rounded-xl bg-cyan-950 border border-cyan-500/50 text-cyan-300 hover:bg-cyan-500/20 hover:border-cyan-400 flex items-center justify-center shrink-0 transition cursor-pointer" title="Bicara (Voice Input)">
+                <input type="file" id="image-upload-input" accept="image/*" class="hidden">
+                <form id="chat-form" class="flex items-center gap-2">
+                    <button type="button" id="mic-btn" class="w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-cyan-950 border border-cyan-500/50 text-cyan-300 hover:bg-cyan-500/20 hover:border-cyan-400 flex items-center justify-center shrink-0 transition cursor-pointer" title="Bicara (Voice Input)">
                         <i class="fas fa-microphone"></i>
                     </button>
-                    <button type="button" id="random-img-btn" onclick="triggerRandomPhoto()" class="w-11 h-11 rounded-xl bg-purple-950/70 border border-purple-500/50 text-purple-300 hover:bg-purple-500/20 hover:border-purple-400 flex items-center justify-center shrink-0 transition cursor-pointer" title="Generate Foto Random Kejutan">
+                    <button type="button" id="upload-img-btn" onclick="document.getElementById('image-upload-input').click()" class="w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-emerald-950/70 border border-emerald-500/50 text-emerald-300 hover:bg-emerald-500/20 hover:border-emerald-400 flex items-center justify-center shrink-0 transition cursor-pointer" title="Kirim / Scan / Edit Foto (Vision Scanner)">
+                        <i class="fas fa-camera"></i>
+                    </button>
+                    <button type="button" id="random-img-btn" onclick="triggerRandomPhoto()" class="w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-purple-950/70 border border-purple-500/50 text-purple-300 hover:bg-purple-500/20 hover:border-purple-400 flex items-center justify-center shrink-0 transition cursor-pointer" title="Generate Foto Random Kejutan">
                         <i class="fas fa-wand-magic-sparkles"></i>
                     </button>
                     <input 
                         type="text" 
                         id="user-input" 
-                        placeholder="Ngobrol santai atau ketik 'Buatin gambar...' ke JARVIS..." 
-                        class="flex-1 bg-slate-950/80 border border-cyan-500/40 rounded-xl px-4 py-2.5 text-sm sm:text-base text-cyan-50 placeholder-cyan-500/50 focus:outline-none focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400 transition"
+                        placeholder="Ngobrol, ketik 'Buatin gambar...', atau kirim foto..." 
+                        class="flex-1 min-w-0 bg-slate-950/80 border border-cyan-500/40 rounded-xl px-3.5 py-2.5 text-sm sm:text-base text-cyan-50 placeholder-cyan-500/50 focus:outline-none focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400 transition"
                         autocomplete="off"
                     >
-                    <button type="submit" id="send-btn" class="px-4 sm:px-5 h-11 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-orbitron font-bold text-xs sm:text-sm tracking-wider flex items-center gap-2 shrink-0 transition shadow-[0_0_15px_rgba(0,243,255,0.4)] cursor-pointer">
+                    <button type="submit" id="send-btn" class="px-3.5 sm:px-5 h-10 sm:h-11 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-orbitron font-bold text-xs sm:text-sm tracking-wider flex items-center gap-2 shrink-0 transition shadow-[0_0_15px_rgba(0,243,255,0.4)] cursor-pointer">
                         <span class="hidden sm:inline">KIRIM</span>
                         <i class="fas fa-paper-plane"></i>
                     </button>
@@ -401,6 +442,57 @@
         let isListening = false;
         let isProcessing = false;
         let eqInterval = null;
+        let attachedImageBase64 = null;
+        let attachedImageMime = null;
+        let isCombatMode = false;
+
+        // ==========================================
+        // 1B. SCI-FI HUD SOUND EFFECTS (WEB AUDIO API)
+        // ==========================================
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        function playHudBeep(type = 'click') {
+            try {
+                if (audioCtx.state === 'suspended') audioCtx.resume();
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+
+                const now = audioCtx.currentTime;
+                if (type === 'send') {
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(520, now);
+                    osc.frequency.exponentialRampToValueAtTime(980, now + 0.12);
+                    gain.gain.setValueAtTime(0.08, now);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.14);
+                    osc.start(now);
+                    osc.stop(now + 0.14);
+                } else if (type === 'receive') {
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(880, now);
+                    osc.frequency.exponentialRampToValueAtTime(620, now + 0.16);
+                    gain.gain.setValueAtTime(0.08, now);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.18);
+                    osc.start(now);
+                    osc.stop(now + 0.18);
+                } else if (type === 'render') {
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(440, now);
+                    osc.frequency.exponentialRampToValueAtTime(1320, now + 0.25);
+                    gain.gain.setValueAtTime(0.09, now);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.28);
+                    osc.start(now);
+                    osc.stop(now + 0.28);
+                } else {
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(750, now);
+                    gain.gain.setValueAtTime(0.05, now);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.06);
+                    osc.start(now);
+                    osc.stop(now + 0.06);
+                }
+            } catch (e) {}
+        }
 
         // Elemen DOM
         const chatContainer = document.getElementById('chat-container');
@@ -421,25 +513,43 @@
         const closeApiModal = document.getElementById('close-api-modal');
         const saveApiBtn = document.getElementById('save-api-btn');
         const customApiInput = document.getElementById('custom-api-input');
+        const themeToggleBtn = document.getElementById('theme-toggle-btn');
+        const imageStyleSelect = document.getElementById('image-style-select');
+        const imageUploadInput = document.getElementById('image-upload-input');
+        const attachmentPreviewBar = document.getElementById('attachment-preview-bar');
+        const attachmentThumb = document.getElementById('attachment-thumb');
 
-        // Modal Preview Gambar
-        const imagePreviewModal = document.getElementById('image-preview-modal');
-        const closeImageModal = document.getElementById('close-image-modal');
-        const modalFullImg = document.getElementById('modal-full-img');
-        const modalImgCaption = document.getElementById('modal-img-caption');
-        const modalDownloadBtn = document.getElementById('modal-download-btn');
-
-        closeImageModal.addEventListener('click', () => imagePreviewModal.classList.add('hidden'));
-        imagePreviewModal.addEventListener('click', (e) => {
-            if (e.target === imagePreviewModal) imagePreviewModal.classList.add('hidden');
+        // Kontrol Ganti Protokol Tema
+        themeToggleBtn.addEventListener('click', () => {
+            isCombatMode = !isCombatMode;
+            document.body.classList.toggle('combat-mode', isCombatMode);
+            playHudBeep('render');
+            showNotification(isCombatMode ? 'PROTOKOL HULKBUSTER (RED-GOLD) DIAKTIFKAN!' : 'PROTOKOL MARK LXXXV (CYAN) DIAKTIFKAN!');
         });
 
-        function openImageModal(imageUrl, captionText) {
-            modalFullImg.src = imageUrl;
-            modalImgCaption.textContent = captionText;
-            modalDownloadBtn.href = imageUrl;
-            modalDownloadBtn.download = `JARVIS-HoloRender-${Date.now()}.png`;
-            imagePreviewModal.classList.remove('hidden');
+        // Kontrol Upload Gambar untuk Vision Scanner
+        imageUploadInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = () => {
+                const dataUrl = reader.result;
+                attachedImageMime = file.type || 'image/png';
+                attachedImageBase64 = dataUrl.split(',')[1];
+                attachmentThumb.src = dataUrl;
+                attachmentPreviewBar.classList.remove('hidden');
+                playHudBeep('send');
+                userInput.focus();
+            };
+            reader.readAsDataURL(file);
+            e.target.value = '';
+        });
+
+        function clearAttachedImage() {
+            attachedImageBase64 = null;
+            attachedImageMime = null;
+            attachmentPreviewBar.classList.add('hidden');
+            attachmentThumb.src = '';
         }
 
         // Kontrol Modal API Key
@@ -700,27 +810,34 @@
                         parts: [{
                             text: `Translate and expand this image description into a clear, vivid, accurate English image-generation prompt (max 35 words). Keep every specific subject, style, color, and action requested by the user. Output ONLY the English prompt without quotes or extra explanation:\n\n"${indonesianPrompt}"`
                         }]
-                    }],
-                    generationConfig: { temperature: 0.4 }
+                    }]
                 };
                 const res = await fetch(url, {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify(payload)
                 });
-                if (res.ok) {
-                    const data = await res.json();
-                    const translated = data?.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
-                    if (translated) return translated;
-                }
+                if (!res.ok) return indonesianPrompt;
+                const data = await res.json();
+                const translated = data?.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
+                return translated || indonesianPrompt;
             } catch (e) {
-                // Abaikan jika offline/tanpa API key dan gunakan prompt asli
+                return indonesianPrompt;
             }
-            return indonesianPrompt;
         }
 
-        async function generateJarvisImage(promptText) {
+        async function generateJarvisImage(promptText, inputImageBase64 = null, inputImageMime = null) {
+            const styleChoice = imageStyleSelect ? imageStyleSelect.value : 'photorealistic';
+            const styleBoostMap = {
+                photorealistic: "ultra-realistic photography, 8k resolution, natural lighting, sharp focus",
+                cyberpunk: "cyberpunk sci-fi aesthetic, glowing neon cyan and magenta lights, futuristic rain reflections",
+                anime: "high-budget modern anime movie style, Makoto Shinkai lighting, detailed vibrant illustration",
+                "3d": "Unreal Engine 5 3D render, volumetric lighting, futuristic Stark holographic studio quality"
+            };
+            const styleSuffix = styleBoostMap[styleChoice] || styleBoostMap.photorealistic;
+
             const englishPrompt = await translatePromptToEnglish(promptText);
+            const finalPrompt = `${englishPrompt}, ${styleSuffix}`;
             const modelsToTry = ["gemini-3.1-flash-image", "gemini-3.1-flash-lite-image"];
             let lastError = "";
 
@@ -728,10 +845,19 @@
                 const targetModel = modelsToTry[i];
                 try {
                     const url = `https://generativelanguage.googleapis.com/v1beta/models/${targetModel}:generateContent?key=${apiKey}`;
+                    const userParts = [{ text: inputImageBase64 ? `Edit or transform this image according to instruction: ${finalPrompt}` : `High quality, detailed, accurate visual representation of: ${finalPrompt}` }];
+                    if (inputImageBase64) {
+                        userParts.push({
+                            inlineData: {
+                                mimeType: inputImageMime || "image/png",
+                                data: inputImageBase64
+                            }
+                        });
+                    }
                     const payload = {
                         contents: [{
                             role: "user",
-                            parts: [{ text: `High quality, detailed, accurate visual representation of: ${englishPrompt}` }]
+                            parts: userParts
                         }],
                         generationConfig: {
                             responseModalities: ["IMAGE"]
@@ -771,7 +897,7 @@
             // Jalur Cadangan Otomatis Tanpa API Key (jika dijalankan secara lokal tanpa kunci Gemini)
             try {
                 const seed = Math.floor(Math.random() * 1000000);
-                const encodedPrompt = encodeURIComponent(englishPrompt);
+                const encodedPrompt = encodeURIComponent(finalPrompt);
                 const fallbackUrl = `https://image.pollinations.ai/prompt/${encodedPrompt}?width=1024&height=1024&seed=${seed}&nologo=true`;
                 
                 // Verifikasi gambar berhasil dimuat
@@ -800,12 +926,22 @@
         }
 
         // ==========================================
-        // 7. INTEGRASI GEMINI TEXT API DENGAN BACKOFF
+        // 7. INTEGRASI GEMINI TEXT & VISION API DENGAN BACKOFF
         // ==========================================
-        async function fetchJarvisResponse(userMessage) {
+        async function fetchJarvisResponse(userMessage, imageBase64 = null, imageMime = null) {
+            const currentParts = [{ text: userMessage || "Analisis dan jelaskan detail gambar ini dengan gaya santai khas JARVIS." }];
+            if (imageBase64) {
+                currentParts.push({
+                    inlineData: {
+                        mimeType: imageMime || "image/png",
+                        data: imageBase64
+                    }
+                });
+            }
+
             chatHistory.push({
                 role: "user",
-                parts: [{ text: userMessage }]
+                parts: currentParts
             });
 
             const recentHistory = chatHistory.slice(-10);
@@ -927,43 +1063,22 @@
             chatContainer.scrollTop = chatContainer.scrollHeight;
         }
 
-        function appendImageMessage(imageUrl, promptUsed, captionText, engineSource = "HD RENDER") {
-            const wrapper = document.createElement('div');
-            wrapper.className = 'flex items-start gap-3';
-            
-            const safeCaption = formatMessageText(captionText);
-            const escapedPrompt = promptUsed.replace(/"/g, '&quot;');
+        function openImageModal(imageUrl, caption) {
+            const modal = document.getElementById('image-preview-modal');
+            const fullImg = document.getElementById('modal-full-img');
+            const captionEl = document.getElementById('modal-img-caption');
+            const downloadBtn = document.getElementById('modal-download-btn');
 
-            wrapper.innerHTML = `
-                <div class="w-8 h-8 rounded-lg bg-purple-500/20 border border-purple-400 flex items-center justify-center shrink-0 mt-1">
-                    <i class="fas fa-cube text-purple-300 text-sm"></i>
-                </div>
-                <div class="bg-slate-900/80 border border-purple-500/40 rounded-2xl rounded-tl-none p-3.5 max-w-[88%] sm:max-w-[75%] text-sm sm:text-base leading-relaxed text-cyan-50 shadow-[0_0_20px_rgba(168,85,247,0.15)] space-y-2.5">
-                    <div class="flex items-center justify-between gap-2">
-                        <span class="text-[11px] font-orbitron text-purple-300">J.A.R.V.I.S. // HOLO-PROJECTION</span>
-                        <span class="text-[10px] font-orbitron px-2 py-0.5 rounded bg-purple-500/20 text-purple-200 border border-purple-400/30">${engineSource}</span>
-                    </div>
-                    <p>${safeCaption}</p>
-                    <div class="relative group rounded-xl overflow-hidden border border-cyan-500/30 bg-slate-950">
-                        <img src="${imageUrl}" alt="${escapedPrompt}" class="w-full h-auto max-h-80 object-cover cursor-pointer transition duration-300 group-hover:scale-[1.02]" onclick="openImageModal('${imageUrl}', '${escapedPrompt}')">
-                        <div class="absolute bottom-2 right-2 flex items-center gap-1.5 opacity-90 sm:opacity-0 group-hover:opacity-100 transition">
-                            <button onclick="openImageModal('${imageUrl}', '${escapedPrompt}')" class="px-2.5 py-1.5 rounded-lg bg-slate-950/85 border border-cyan-400/50 text-cyan-300 hover:bg-cyan-500 hover:text-slate-950 text-xs font-orbitron flex items-center gap-1 cursor-pointer" title="Perbesar">
-                                <i class="fas fa-expand"></i>
-                            </button>
-                            <a href="${imageUrl}" target="_blank" download="JARVIS-Foto-${Date.now()}.png" class="px-2.5 py-1.5 rounded-lg bg-slate-950/85 border border-purple-400/50 text-purple-300 hover:bg-purple-500 hover:text-white text-xs font-orbitron flex items-center gap-1" title="Unduh Foto">
-                                <i class="fas fa-download"></i> UNDUH
-                            </a>
-                        </div>
-                    </div>
-                    <div class="text-[11px] text-cyan-300/60 italic truncate">
-                        <i class="fas fa-terminal mr-1"></i>Prompt: "${promptUsed}"
-                    </div>
-                </div>
-            `;
-
-            chatContainer.appendChild(wrapper);
-            chatContainer.scrollTop = chatContainer.scrollHeight;
+            fullImg.src = imageUrl;
+            captionEl.textContent = caption;
+            downloadBtn.href = imageUrl;
+            modal.classList.remove('hidden');
+            playHudBeep('click');
         }
+
+        document.getElementById('close-image-modal').addEventListener('click', () => {
+            document.getElementById('image-preview-modal').classList.add('hidden');
+        });
 
         function showTypingIndicator(isRendering = false) {
             const id = 'typing-' + Date.now();
@@ -999,33 +1114,48 @@
 
         async function handleSendMessage(text) {
             const trimmed = text.trim();
-            if (!trimmed || isProcessing) return;
+            if ((!trimmed && !attachedImageBase64) || isProcessing) return;
 
             isProcessing = true;
             userInput.value = '';
-            appendMessage('user', trimmed);
+            playHudBeep('send');
 
-            // Cek apakah user meminta pembuatan gambar/foto
-            if (isImageRequest(trimmed)) {
+            const currentImgB64 = attachedImageBase64;
+            const currentImgMime = attachedImageMime;
+            const currentPreviewUrl = attachmentThumb.src;
+            clearAttachedImage();
+
+            const displayUserText = currentImgB64
+                ? `📷 [Foto Terlampir] ${trimmed || 'Tolong scan & analisis foto ini, Jarv!'}`
+                : trimmed;
+            appendMessage('user', displayUserText);
+
+            // Jika ada foto terlampir dan user meminta edit/ubah gambar
+            const wantsImageEdit = currentImgB64 && /(ubah|edit|ganti|bikin jadi|jadikan|tambahin|tambahkan|hapus|hilangkan|ubah gaya)/i.test(trimmed);
+
+            // Cek apakah user meminta pembuatan/edit gambar/foto
+            if (wantsImageEdit || (!currentImgB64 && isImageRequest(trimmed))) {
                 setCoreState('rendering');
                 const typingId = showTypingIndicator(true);
-                const { prompt, isRandom } = extractImagePrompt(trimmed);
+                const { prompt, isRandom } = extractImagePrompt(trimmed || "Ubah menjadi gaya futuristik Stark HUD");
 
                 try {
-                    const renderResult = await generateJarvisImage(prompt);
+                    const renderResult = await generateJarvisImage(prompt, currentImgB64, currentImgMime);
                     const typingEl = document.getElementById(typingId);
                     if (typingEl) typingEl.remove();
 
-                    const caption = isRandom
-                        ? "Beres Bos! Ini hasil render foto random kejutan dari sistem Holo-Projection saya. Keren kan?"
-                        : "Siap Bos! Proyeksi visual sesuai permintaan sudah selesai dirender. Silakan dicek atau diunduh ya!";
+                    playHudBeep('render');
+                    const caption = wantsImageEdit
+                        ? "Beres Bos! Foto kiriman Anda sudah saya modifikasi ulang lewat modul Holo-Projection."
+                        : (isRandom
+                            ? "Beres Bos! Ini hasil render foto random kejutan dari sistem Holo-Projection saya. Keren kan?"
+                            : "Siap Bos! Proyeksi visual sesuai permintaan sudah selesai dirender. Silakan dicek atau diunduh ya!");
 
                     appendImageMessage(renderResult.url, prompt, caption, renderResult.source);
                     
-                    // Simpan konteks ke memori chat agar JARVIS ingat baru saja membuat gambar
                     chatHistory.push({
                         role: "user",
-                        parts: [{ text: trimmed }]
+                        parts: [{ text: displayUserText }]
                     });
                     chatHistory.push({
                         role: "model",
@@ -1051,15 +1181,16 @@
                 return;
             }
 
-            // Jika bukan permintaan gambar, jalankan obrolan teks/suara normal
+            // Jika bukan permintaan render gambar, jalankan obrolan teks/suara atau Vision Scanner
             setCoreState('processing');
             const typingId = showTypingIndicator(false);
 
-            const reply = await fetchJarvisResponse(trimmed);
+            const reply = await fetchJarvisResponse(trimmed, currentImgB64, currentImgMime);
 
             const typingEl = document.getElementById(typingId);
             if (typingEl) typingEl.remove();
 
+            playHudBeep('receive');
             appendMessage('jarvis', reply);
             isProcessing = false;
             setCoreState('idle');
