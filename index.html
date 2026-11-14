@@ -1081,6 +1081,17 @@
                         return replyText;
                     } else if (candidate?.finishReason === 'SAFETY') {
                         chatHistory.pop();
+                        return "Waduh Bos, topik yang barusan agak kena filter keamanan sistem nih. Coba kita bahas hal lain aja ya!";
+                    } else {
+                        throw new Error("Respons teks kosong dari satelit.");
+                    }
+                } catch (error) {
+                    lastErrorMsg = error.message;
+                    await new Promise(res => setTimeout(res, 600 * (i + 1)));
+                }
+            }
+
+            chatHistory.pop();
             if (lastErrorMsg.toLowerCase().includes("api key") || lastErrorMsg.includes("403") || lastErrorMsg.includes("400")) {
                 return `Bos, akses satelit ditolak (${lastErrorMsg}). Klik tombol **API KEY** di pojok kanan atas untuk memasukkan Gemini API Key Anda ya!`;
             }
