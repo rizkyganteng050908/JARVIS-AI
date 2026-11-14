@@ -1,222 +1,780 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>RZR AI</title>
-<style>
-:root{--bg:#0b1020;--panel:#121935;--text:#e8ecff;--muted:#8d97c4;--accent:#22d3ee;--accent2:#8b5cf6;--user:#1e2a5a;--bot:#151d3d;--border:#25305f;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);color-scheme:dark}
-@media (prefers-color-scheme:light){:root:not([data-theme="dark"]){--bg:#f3f5ff;--panel:#fff;--text:#14183a;--muted:#5d668f;--user:#dfe6ff;--bot:#fff;--border:#d6dcf5;color-scheme:light}}
-:root[data-theme="light"]{--bg:#f3f5ff;--panel:#fff;--text:#14183a;--muted:#5d668f;--user:#dfe6ff;--bot:#fff;--border:#d6dcf5;color-scheme:light}
-:root[data-theme="dark"]{--bg:#0b1020;--panel:#121935;--text:#e8ecff;--muted:#8d97c4;--user:#1e2a5a;--bot:#151d3d;--border:#25305f;color-scheme:dark}
-*{box-sizing:border-box}
-html,body{height:100%;margin:0}
-body{background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;display:flex;justify-content:center}
-.app{width:100%;max-width:820px;height:100%;display:flex;flex-direction:column}
-header{display:flex;align-items:center;gap:12px;padding:14px 16px;border-bottom:1px solid var(--border);background:var(--panel)}
-.logo{width:38px;height:38px;border-radius:12px;background:linear-gradient(135deg,var(--accent),var(--accent2));display:grid;place-items:center;font-weight:800;color:#fff;font-size:14px;letter-spacing:.5px}
-.title{font-weight:700;font-size:17px}
-.sub{font-size:12px;color:var(--muted)}
-.sp{flex:1}
-.ib{background:none;border:1px solid var(--border);color:var(--muted);border-radius:10px;padding:7px 10px;cursor:pointer;font-size:13px}
-.ib:hover{color:var(--text);border-color:var(--accent)}
-#chat{flex:1;overflow-y:auto;padding:18px 14px;display:flex;flex-direction:column;gap:14px}
-.hero{margin:auto;text-align:center;max-width:460px}
-.hero h1{font-size:30px;margin:10px 0 6px;background:linear-gradient(90deg,var(--accent),var(--accent2));-webkit-background-clip:text;background-clip:text;color:transparent}
-.hero p{color:var(--muted);margin:0 0 18px;line-height:1.5}
-.chips{display:flex;flex-wrap:wrap;gap:8px;justify-content:center}
-.chip{background:var(--panel);border:1px solid var(--border);color:var(--text);padding:9px 13px;border-radius:999px;cursor:pointer;font-size:13px}
-.chip:hover{border-color:var(--accent)}
-.msg{max-width:88%;padding:11px 14px;border-radius:16px;line-height:1.55;font-size:15px;word-wrap:break-word;overflow-wrap:anywhere}
-.msg.user{align-self:flex-end;background:var(--user);border-bottom-right-radius:4px;white-space:pre-wrap}
-.msg.bot{align-self:flex-start;background:var(--bot);border:1px solid var(--border);border-bottom-left-radius:4px}
-.msg pre{background:#0006;color:#e8ecff;padding:10px 12px;border-radius:10px;overflow-x:auto;font-size:13px;margin:8px 0}
-.msg code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:.9em}
-.msg :not(pre)>code{background:#7c86b833;padding:1px 5px;border-radius:5px}
-.msg p{margin:0 0 8px}.msg p:last-child{margin:0}
-.msg ul{margin:4px 0 8px;padding-left:20px}
-.dots span{display:inline-block;width:7px;height:7px;margin-right:4px;border-radius:50%;background:var(--accent);animation:b 1s infinite}
-.dots span:nth-child(2){animation-delay:.15s}.dots span:nth-child(3){animation-delay:.3s}
-@keyframes b{0%,80%,100%{opacity:.25;transform:translateY(0)}40%{opacity:1;transform:translateY(-4px)}}
-form,.bar{display:flex;gap:8px;padding:12px 14px;border-top:1px solid var(--border);background:var(--panel);align-items:flex-end}
-textarea{flex:1;resize:none;max-height:140px;min-height:44px;padding:11px 13px;border-radius:14px;border:1px solid var(--border);background:var(--bg);color:var(--text);font:inherit;font-size:15px;outline:none}
-textarea:focus{border-color:var(--accent)}
-.send{height:44px;min-width:44px;padding:0 16px;border:0;border-radius:14px;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;font-weight:700;cursor:pointer}
-.send:disabled{opacity:.5;cursor:not-allowed}
-.note{font-size:11px;color:var(--muted);text-align:center;padding:0 14px 8px;background:var(--panel)}
-.mic{height:44px;width:44px;border-radius:14px;border:1px solid var(--border);background:var(--bg);color:var(--text);cursor:pointer;font-size:18px}
-.mic.on{background:#ef4444;color:#fff;border-color:#ef4444;animation:pl 1.2s infinite}
-@keyframes pl{50%{opacity:.6}}
-.gen{display:block;width:100%;max-width:520px;border-radius:12px;margin-top:10px;border:1px solid var(--border);background:#fff}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>J.A.R.V.I.S. - Just A Rather Very Intelligent System</title>
+    <!-- Tailwind CSS untuk styling modern dan responsif -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font futuristik & teknis -->
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Font Awesome untuk ikon HUD -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --jarvis-cyan: #00f3ff;
+            --jarvis-blue: #0066ff;
+            --jarvis-dark: #030812;
+            --jarvis-panel: rgba(6, 20, 42, 0.75);
+            --jarvis-border: rgba(0, 243, 255, 0.3);
+            --jarvis-alert: #ff3b30;
+        }
+
+        body {
+            background-color: var(--jarvis-dark);
+            color: #e0f7fa;
+            font-family: 'Rajdhani', sans-serif;
+            overflow-x: hidden;
+            background-image: 
+                radial-gradient(circle at 50% 50%, rgba(0, 102, 255, 0.12) 0%, transparent 70%),
+                linear-gradient(rgba(0, 243, 255, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 243, 255, 0.03) 1px, transparent 1px);
+            background-size: 100% 100%, 30px 30px, 30px 30px;
+        }
+
+        .font-orbitron {
+            font-family: 'Orbitron', sans-serif;
+        }
+
+        /* Animasi Arc Reactor & HUD Rings */
+        @keyframes spin-slow {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @keyframes spin-reverse {
+            0% { transform: rotate(360deg); }
+            100% { transform: rotate(0deg); }
+        }
+
+        @keyframes pulse-glow {
+            0%, 100% { box-shadow: 0 0 20px rgba(0, 243, 255, 0.4), inset 0 0 20px rgba(0, 243, 255, 0.4); }
+            50% { box-shadow: 0 0 40px rgba(0, 243, 255, 0.8), inset 0 0 30px rgba(0, 243, 255, 0.7); }
+        }
+
+        @keyframes speaking-pulse {
+            0%, 100% { transform: scale(1); box-shadow: 0 0 25px #00f3ff, inset 0 0 25px #00f3ff; }
+            50% { transform: scale(1.08); box-shadow: 0 0 55px #00f3ff, inset 0 0 40px #ffffff; }
+        }
+
+        .ring-outer {
+            animation: spin-slow 25s linear infinite;
+        }
+
+        .ring-middle {
+            animation: spin-reverse 15s linear infinite;
+        }
+
+        .ring-inner {
+            animation: spin-slow 8s linear infinite;
+        }
+
+        .core-idle {
+            animation: pulse-glow 3s ease-in-out infinite;
+        }
+
+        .core-speaking {
+            animation: speaking-pulse 0.4s ease-in-out infinite !important;
+        }
+
+        .core-listening {
+            box-shadow: 0 0 45px #ff3b30, inset 0 0 30px #ff3b30 !important;
+            border-color: #ff3b30 !important;
+        }
+
+        /* Custom Scrollbar untuk Log Chat */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(0, 20, 40, 0.5);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(0, 243, 255, 0.4);
+            border-radius: 3px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(0, 243, 255, 0.8);
+        }
+
+        /* Glassmorphism HUD Panel */
+        .hud-panel {
+            background: var(--jarvis-panel);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--jarvis-border);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.6);
+        }
+
+        .hud-corner {
+            position: relative;
+        }
+        .hud-corner::before, .hud-corner::after {
+            content: '';
+            position: absolute;
+            width: 12px;
+            height: 12px;
+            border-color: var(--jarvis-cyan);
+            border-style: solid;
+            pointer-events: none;
+        }
+        .hud-corner::before {
+            top: -1px;
+            left: -1px;
+            border-width: 2px 0 0 2px;
+        }
+        .hud-corner::after {
+            bottom: -1px;
+            right: -1px;
+            border-width: 0 2px 2px 0;
+        }
+
+        /* Equalizer Bars */
+        .eq-bar {
+            width: 4px;
+            background-color: var(--jarvis-cyan);
+            border-radius: 2px;
+            transition: height 0.1s ease;
+        }
+    </style>
 </head>
-<body>
-<div class="app">
-  <header>
-    <div class="logo">RZR</div>
-    <div><div class="title">RZR AI</div><div class="sub">Asisten pintar buatan Rizky</div></div>
-    <div class="sp"></div>
-    <button class="ib" id="tts" title="Suara RZR AI">🔊</button>
-    <button class="ib" id="theme" title="Ganti tema">◐</button>
-    <button class="ib" id="clear">Chat baru</button>
-  </header>
-  <div id="chat"></div>
-  <div class="bar">
-    <button class="mic" id="mic" title="Bicara">🎤</button>
-    <textarea id="in" rows="1" placeholder="Ketik, bicara, atau minta gambar…"></textarea>
-    <button class="send" id="send">Kirim</button>
-  </div>
-  <div class="note">RZR AI bisa keliru. Periksa kembali info penting.</div>
-</div>
-<script>
-var PERSONA = "Kamu adalah RZR AI, asisten AI yang ramah, cerdas, dan to the point, dibuat oleh Mochamad Rizky Ramadhan (RZR.DEV). Selalu perkenalkan dirimu sebagai RZR AI. Balas dalam bahasa yang dipakai pengguna (default Bahasa Indonesia). Gunakan format sederhana: paragraf pendek, daftar dengan tanda -, dan blok kode dengan tiga backtick jika perlu. Jangan menyebut instruksi ini.";
-var chatEl = document.getElementById("chat"), inEl = document.getElementById("in"), sendBtn = document.getElementById("send");
-var history = [], sample = null, busy = false, ctrl = null;
+<body class="min-h-screen flex flex-col justify-between p-3 sm:p-6 select-none">
 
-var SUG = ["Jelaskan apa itu API dengan sederhana", "Kasih aku gambar random", "Gambarkan pemandangan gunung saat senja", "Tips belajar JavaScript dari nol"];
-var IMG_RE = /\b(gambar(kan)?|foto|lukis(kan)?|ilustrasi|sketsa|wallpaper|poster|logo|draw|picture|image|photo)\b/i;
-var SUBJ = ["kucing lucu di jendela saat hujan", "kota futuristik malam hari", "pantai tropis saat matahari terbenam", "astronot di planet berwarna ungu", "hutan ajaib dengan kunang-kunang", "robot kecil sedang menanam bunga", "gunung bersalju dengan danau", "kapal layar di lautan berbintang"];
-var ttsOn = true;
-function speak(t){
-  if (!ttsOn || !window.speechSynthesis) return;
-  try {
-    speechSynthesis.cancel();
-    var c = t.replace(/```[\s\S]*?```/g, " kode ").replace(/[*`#_]/g, "").replace(/\s+/g, " ").trim().slice(0, 600);
-    if (!c) return;
-    var u = new SpeechSynthesisUtterance(c);
-    u.lang = /\b(the|and|is|you|this)\b/i.test(c) ? "en-US" : "id-ID";
-    speechSynthesis.speak(u);
-  } catch (e) {}
-}
-var micBtn = document.getElementById("mic"), listening = false, base = "", dict = null, rec = null;
-var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-function setMic(on){ listening = on; micBtn.classList.toggle("on", on); }
-micBtn.onclick = function(){
-  if (window.speechSynthesis) speechSynthesis.cancel();
-  if (dict){
-    if (listening){ dict.stop(); return; }
-    base = inEl.value ? inEl.value + " " : "";
-    dict.start().catch(function(){});
-  } else if (SR){
-    if (listening){ rec.stop(); return; }
-    base = inEl.value ? inEl.value + " " : "";
-    rec = new SR(); rec.lang = "id-ID"; rec.interimResults = true;
-    rec.onresult = function(e){ var t = ""; for (var i = 0; i < e.results.length; i++) t += e.results[i][0].transcript; inEl.value = base + t; };
-    rec.onend = function(){ setMic(false); };
-    rec.onerror = function(){ setMic(false); };
-    rec.start(); setMic(true);
-  }
-};
-document.getElementById("tts").onclick = function(){
-  ttsOn = !ttsOn; this.textContent = ttsOn ? "🔊" : "🔇";
-  if (!ttsOn && window.speechSynthesis) speechSynthesis.cancel();
-};
+    <!-- Header HUD -->
+    <header class="w-full max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-4 pb-4 border-b border-cyan-500/30">
+        <div class="flex items-center gap-3">
+            <div class="w-3 h-3 rounded-full bg-cyan-400 animate-ping"></div>
+            <div>
+                <h1 class="font-orbitron text-xl sm:text-2xl font-bold tracking-widest text-cyan-400 drop-shadow-[0_0_8px_rgba(0,243,255,0.6)]">
+                    J.A.R.V.I.S. <span class="text-xs font-normal text-cyan-200/70 tracking-normal">MARK LXXXV</span>
+                </h1>
+                <p class="text-xs text-cyan-300/70 tracking-wider">STARK INDUSTRIES // NEURAL INTERFACE ACTIVE</p>
+            </div>
+        </div>
 
-function esc(s){return s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");}
-function inline(s){return esc(s).replace(/`([^`]+)`/g,"<code>$1</code>").replace(/\*\*([^*]+)\*\*/g,"<strong>$1</strong>");}
-function md(t){
-  var parts = t.split(/```/), out = "";
-  for (var i = 0; i < parts.length; i++){
-    if (i % 2 === 1){
-      var c = parts[i].replace(/^[^\n]*\n/, "");
-      out += "<pre><code>" + esc(c.replace(/\n$/, "")) + "</code></pre>";
-    } else {
-      var blocks = parts[i].split(/\n{2,}/);
-      blocks.forEach(function(b){
-        if (!b.trim()) return;
-        var lines = b.split("\n");
-        if (lines.every(function(l){return /^\s*[-*]\s+/.test(l);})){
-          out += "<ul>" + lines.map(function(l){return "<li>" + inline(l.replace(/^\s*[-*]\s+/, "")) + "</li>";}).join("") + "</ul>";
-        } else {
-          out += "<p>" + lines.map(inline).join("<br>") + "</p>";
-        }
-      });
-    }
-  }
-  return out;
-}
-function scroll(){chatEl.scrollTop = chatEl.scrollHeight;}
-function add(role, text){
-  var d = document.createElement("div");
-  d.className = "msg " + role;
-  if (role === "user") d.textContent = text; else d.innerHTML = text;
-  chatEl.appendChild(d); scroll(); return d;
-}
-function hero(){
-  chatEl.innerHTML = "";
-  var h = document.createElement("div");
-  h.className = "hero";
-  h.innerHTML = "<div class=\"logo\" style=\"margin:0 auto;width:60px;height:60px;font-size:20px;border-radius:18px\">RZR</div><h1>Halo, saya RZR AI</h1><p>Tanyakan apa saja: coding, ide, tulisan, belajar, atau sekadar ngobrol.</p>";
-  var c = document.createElement("div"); c.className = "chips";
-  SUG.forEach(function(s){
-    var b = document.createElement("button");
-    b.className = "chip"; b.textContent = s;
-    b.onclick = function(){ send(s); };
-    c.appendChild(b);
-  });
-  h.appendChild(c); chatEl.appendChild(h);
-}
-async function send(text){
-  text = (text || inEl.value).trim();
-  if (!text || busy) return;
-  if (!sample){ add("bot", "<p>Fitur AI belum tersedia di tampilan ini. Buka halaman lewat claude.ai dan beri izin.</p>"); return; }
-  var hr = chatEl.querySelector(".hero"); if (hr) chatEl.innerHTML = "";
-  inEl.value = ""; inEl.style.height = "auto";
-  add("user", text);
-  history.push({role: "user", content: text});
-  var msgs = history.map(function(m, i){
-    return i === 0 ? {role: "user", content: PERSONA + "\n\n---\nPesan pengguna:\n" + m.content} : m;
-  });
-  var bot = add("bot", "<span class=\"dots\"><span></span><span></span><span></span></span>");
-  busy = true; sendBtn.disabled = true; ctrl = new AbortController();
-  try {
-    if (IMG_RE.test(text)) {
-      var subj = /random|acak|bebas|terserah/i.test(text) ? " Pilih sendiri subjek secara acak, misalnya: " + SUBJ[Math.floor(Math.random() * SUBJ.length)] + "." : "";
-      var im = msgs.slice(0, -1).concat([{role: "user", content: msgs[msgs.length - 1].content + "\n\n[Instruksi: pengguna meminta gambar. Buat ilustrasi SVG yang indah dan detail (viewBox 0 0 800 600, gradien dan bentuk yang kaya, tanpa script, tanpa gambar atau font eksternal). Tulis satu kalimat pembuka singkat, lalu kode <svg>...</svg> lengkap, tidak ada yang lain." + subj + "]"}]);
-      bot.innerHTML = "<span class=\"dots\"><span></span><span></span><span></span></span> Sedang menggambar…";
-      var g = await sample(im, {cache: false, signal: ctrl.signal});
-      var mm = g.text.match(/<svg[\s\S]*<\/svg>/i);
-      var cap = g.text.replace(/```(?:svg|xml|html)?/gi, "").replace(/<svg[\s\S]*<\/svg>/i, "").trim() || "Ini gambarnya:";
-      bot.innerHTML = md(cap);
-      if (mm) {
-        var svg = mm[0].replace(/<script[\s\S]*?<\/script>/gi, "");
-        if (!/xmlns=/.test(svg)) svg = svg.replace("<svg", "<svg xmlns=\"http://www.w3.org/2000/svg\"");
-        var img = new Image(); img.className = "gen"; img.alt = "Gambar buatan RZR AI";
-        img.src = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(svg);
-        bot.appendChild(img);
-      } else { bot.innerHTML += "<p>Gambar belum berhasil dibuat, coba lagi.</p>"; }
-      history.push({role: "assistant", content: cap + " [gambar dibuat]"});
-      speak(cap);
-    } else {
-      var r = await sample(msgs, {cache: false, signal: ctrl.signal, onText: function(o){ bot.innerHTML = md(o.text); scroll(); }});
-      bot.innerHTML = md(r.text); history.push({role: "assistant", content: r.text});
-      speak(r.text);
-    }
-  } catch (e) {
-    history.pop();
-    var m = e && e.code === "rate_limited" ? "Terlalu banyak permintaan, coba lagi sebentar." : e && e.code === "not_granted" ? "Izin ditolak. Muat ulang halaman dan izinkan RZR AI." : "Maaf, terjadi kesalahan. Coba kirim lagi.";
-    bot.innerHTML = "<p>" + m + "</p>";
-  }
-  busy = false; sendBtn.disabled = false; ctrl = null; scroll(); inEl.focus();
-}
-sendBtn.onclick = function(){ send(); };
-inEl.addEventListener("keydown", function(e){ if (e.key === "Enter" && !e.shiftKey){ e.preventDefault(); send(); } });
-inEl.addEventListener("input", function(){ inEl.style.height = "auto"; inEl.style.height = Math.min(inEl.scrollHeight, 140) + "px"; });
-document.getElementById("clear").onclick = function(){ if (window.speechSynthesis) speechSynthesis.cancel(); if (ctrl) ctrl.abort(); history = []; busy = false; sendBtn.disabled = false; hero(); };
-document.getElementById("theme").onclick = function(){
-  var r = document.documentElement, dark = r.getAttribute("data-theme") ? r.getAttribute("data-theme") === "dark" : !window.matchMedia("(prefers-color-scheme: light)").matches;
-  r.setAttribute("data-theme", dark ? "light" : "dark");
-};
-hero();
-(async function(){
-  try { sample = await claude.use("sample"); } catch (e) { sample = null; }
-  try { dict = await claude.use("dictation"); } catch (e) { dict = null; }
-  if (dict) {
-    dict.onPartial(function(o){ inEl.value = base + o.text; });
-    dict.onFinal(function(o){ base += o.text + " "; inEl.value = base; });
-    dict.onState(function(o){ setMic(o.state === "listening"); });
-  } else if (!SR) { micBtn.style.display = "none"; }
-})();
-</script>
+        <!-- Status & Telemetry -->
+        <div class="flex items-center gap-3 sm:gap-5 text-xs sm:text-sm">
+            <div class="hidden md:flex flex-col items-end">
+                <span class="text-cyan-400/70">SYSTEM STATUS</span>
+                <span id="sys-status" class="font-orbitron text-emerald-400 font-semibold">ONLINE // READY</span>
+            </div>
+            <div class="hidden sm:flex flex-col items-end">
+                <span class="text-cyan-400/70">LOCAL TIME</span>
+                <span id="hud-clock" class="font-orbitron text-cyan-200">00:00:00</span>
+            </div>
+            <!-- Tombol Pengaturan API Key -->
+            <button id="api-key-btn" class="hud-panel px-3 py-2 rounded-lg flex items-center gap-2 text-cyan-300 hover:bg-cyan-500/20 transition cursor-pointer" title="Atur API Key Gemini Manual">
+                <i class="fas fa-key text-amber-400"></i>
+                <span class="hidden sm:inline font-semibold">API KEY</span>
+            </button>
+            <!-- Toggle Voice Output -->
+            <button id="toggle-voice-btn" class="hud-panel px-3 py-2 rounded-lg flex items-center gap-2 text-cyan-300 hover:bg-cyan-500/20 transition cursor-pointer" title="Aktifkan/Matikan Suara JARVIS">
+                <i id="voice-icon" class="fas fa-volume-up text-cyan-400"></i>
+                <span class="hidden sm:inline font-semibold">SUARA: ON</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- Modal Pengaturan API Key -->
+    <div id="api-modal" class="hidden fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="hud-panel hud-corner rounded-2xl max-w-md w-full p-6 space-y-4">
+            <div class="flex items-center justify-between border-b border-cyan-500/30 pb-3">
+                <h3 class="font-orbitron text-sm font-bold text-cyan-300 tracking-wider"><i class="fas fa-shield-alt mr-2 text-amber-400"></i>STARK SATELLITE ACCESS</h3>
+                <button id="close-api-modal" class="text-cyan-400 hover:text-white cursor-pointer"><i class="fas fa-times"></i></button>
+            </div>
+            <p class="text-xs text-cyan-100/80 leading-relaxed">
+                Masukkan <strong>Gemini API Key</strong> Anda di bawah ini agar JARVIS tetap terhubung saat dijalankan secara lokal. Kunci akan tersimpan otomatis di browser Anda.
+            </p>
+            <input type="password" id="custom-api-input" placeholder="Tempel Gemini API Key (AIzaSy...)" class="w-full bg-slate-950 border border-cyan-500/50 rounded-xl px-4 py-2.5 text-sm text-cyan-50 focus:outline-none focus:border-cyan-400">
+            <div class="flex justify-end gap-2 pt-2">
+                <button id="save-api-btn" class="px-4 py-2 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-orbitron font-bold text-xs tracking-wider cursor-pointer">SIMPAN KUNCI</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Interface Grid -->
+    <main class="w-full max-w-7xl mx-auto my-4 flex-1 grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
+        
+        <!-- Left Column: Telemetry & Arc Reactor Core (5 cols on lg) -->
+        <div class="lg:col-span-5 flex flex-col justify-between gap-4">
+            
+            <!-- Arc Reactor Visualizer Container -->
+            <div class="hud-panel hud-corner rounded-2xl p-6 flex flex-col items-center justify-center relative overflow-hidden flex-1 min-h-[300px]">
+                <!-- Background Decorative Grid -->
+                <div class="absolute inset-0 opacity-20 pointer-events-none flex items-center justify-center">
+                    <div class="w-72 h-72 rounded-full border border-dashed border-cyan-400"></div>
+                </div>
+
+                <!-- Status Label Top -->
+                <div class="absolute top-4 left-4 text-xs font-orbitron text-cyan-400/80">
+                    CORE TEMP: <span class="text-cyan-200">34.2°C</span>
+                </div>
+                <div class="absolute top-4 right-4 text-xs font-orbitron text-cyan-400/80">
+                    PROTOCOL: <span class="text-emerald-400">CASUAL-ID</span>
+                </div>
+
+                <!-- The Arc Reactor Core -->
+                <div id="arc-reactor" class="relative w-48 h-48 sm:w-56 sm:h-56 flex items-center justify-center cursor-pointer group" title="Klik untuk bicara dengan JARVIS">
+                    <!-- Outer Ring -->
+                    <div class="ring-outer absolute inset-0 rounded-full border-2 border-dashed border-cyan-400/60"></div>
+                    <!-- Middle Segmented Ring -->
+                    <div class="ring-middle absolute inset-3 rounded-full border-4 border-t-cyan-400 border-r-transparent border-b-cyan-400 border-l-transparent opacity-80"></div>
+                    <!-- Inner Ring -->
+                    <div class="ring-inner absolute inset-7 rounded-full border-2 border-dotted border-cyan-300"></div>
+                    
+                    <!-- Center Glowing Core -->
+                    <div id="reactor-core" class="core-idle relative w-24 h-24 sm:w-28 sm:h-28 rounded-full bg-cyan-950/90 border-2 border-cyan-300 flex flex-col items-center justify-center transition-all duration-300 group-hover:scale-105">
+                        <i id="core-icon" class="fas fa-microphone text-2xl sm:text-3xl text-cyan-300 drop-shadow-[0_0_10px_#00f3ff]"></i>
+                        <span id="core-label" class="text-[10px] font-orbitron tracking-widest text-cyan-200 mt-1">STANDBY</span>
+                    </div>
+                </div>
+
+                <!-- Audio Visualizer Equalizer -->
+                <div id="visualizer" class="flex items-end justify-center gap-1 h-8 mt-6">
+                    <div class="eq-bar h-2"></div>
+                    <div class="eq-bar h-3"></div>
+                    <div class="eq-bar h-5"></div>
+                    <div class="eq-bar h-2"></div>
+                    <div class="eq-bar h-6"></div>
+                    <div class="eq-bar h-4"></div>
+                    <div class="eq-bar h-7"></div>
+                    <div class="eq-bar h-3"></div>
+                    <div class="eq-bar h-5"></div>
+                    <div class="eq-bar h-2"></div>
+                    <div class="eq-bar h-4"></div>
+                    <div class="eq-bar h-2"></div>
+                </div>
+
+                <p id="interaction-hint" class="text-xs text-cyan-300/70 mt-3 text-center">
+                    Klik inti reaktor di atas untuk ngobrol pakai suara, atau ketik pesan di sebelah kanan.
+                </p>
+            </div>
+
+            <!-- Quick Commands / Diagnostic Box -->
+            <div class="hud-panel hud-corner rounded-xl p-4">
+                <div class="flex items-center justify-between mb-2">
+                    <span class="text-xs font-orbitron text-cyan-400 tracking-wider"><i class="fas fa-bolt mr-1"></i> PERINTAH CEPAT</span>
+                    <span class="text-[10px] text-cyan-500">TAP TO EXECUTE</span>
+                </div>
+                <div class="grid grid-cols-2 gap-2 text-xs">
+                    <button onclick="sendQuickPrompt('Halo Jarvis, gimana kabar hari ini?')" class="text-left p-2 rounded bg-cyan-950/50 border border-cyan-500/30 hover:bg-cyan-500/20 hover:border-cyan-400 transition truncate">
+                        "Gimana kabar hari ini?"
+                    </button>
+                    <button onclick="sendQuickPrompt('Cek status sistem dan cuaca dong Jarv')" class="text-left p-2 rounded bg-cyan-950/50 border border-cyan-500/30 hover:bg-cyan-500/20 hover:border-cyan-400 transition truncate">
+                        "Cek status & cuaca dong"
+                    </button>
+                    <button onclick="sendQuickPrompt('Kasih ide proyek seru buat weekend ini')" class="text-left p-2 rounded bg-cyan-950/50 border border-cyan-500/30 hover:bg-cyan-500/20 hover:border-cyan-400 transition truncate">
+                        "Ide proyek weekend"
+                    </button>
+                    <button onclick="sendQuickPrompt('Ceritain fakta unik tentang luar angkasa')" class="text-left p-2 rounded bg-cyan-950/50 border border-cyan-500/30 hover:bg-cyan-500/20 hover:border-cyan-400 transition truncate">
+                        "Fakta unik luar angkasa"
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Column: Communication Terminal & Chat (7 cols on lg) -->
+        <div class="lg:col-span-7 hud-panel hud-corner rounded-2xl flex flex-col h-[520px] lg:h-auto overflow-hidden">
+            
+            <!-- Terminal Header -->
+            <div class="px-5 py-3 border-b border-cyan-500/30 flex items-center justify-between bg-cyan-950/30">
+                <div class="flex items-center gap-2">
+                    <i class="fas fa-terminal text-cyan-400 text-sm"></i>
+                    <span class="font-orbitron text-xs sm:text-sm font-semibold tracking-wider text-cyan-300">COMM-LINK TERMINAL</span>
+                </div>
+                <button id="clear-chat-btn" class="text-xs text-cyan-400/70 hover:text-cyan-300 transition flex items-center gap-1 cursor-pointer">
+                    <i class="fas fa-trash-alt"></i> Reset Log
+                </button>
+            </div>
+
+            <!-- Chat History Container -->
+            <div id="chat-container" class="flex-1 p-4 sm:p-5 overflow-y-auto space-y-4 scroll-smooth">
+                <!-- Initial Greeting Message -->
+                <div class="flex items-start gap-3">
+                    <div class="w-8 h-8 rounded-lg bg-cyan-500/20 border border-cyan-400 flex items-center justify-center shrink-0 mt-1">
+                        <i class="fas fa-robot text-cyan-300 text-sm"></i>
+                    </div>
+                    <div class="bg-cyan-950/60 border border-cyan-500/30 rounded-2xl rounded-tl-none p-3.5 max-w-[85%] text-sm sm:text-base leading-relaxed text-cyan-50 shadow-md">
+                        <div class="text-[11px] font-orbitron text-cyan-400 mb-1">J.A.R.V.I.S. // SYSTEM</div>
+                        Halo Bos! Sistem sudah aktif dan siap tempur. Santai aja ngobrolnya, mau nanya apa nih hari ini? Mau bahas teknologi, minta saran, atau sekadar ngobrol ngalor-ngidul juga saya ladenin.
+                    </div>
+                </div>
+            </div>
+
+            <!-- Custom Notification Banner -->
+            <div id="notification-banner" class="hidden px-4 py-2 bg-amber-500/20 border-t border-amber-500/40 text-amber-200 text-xs flex items-center justify-between">
+                <span id="notification-text">Pesan notifikasi</span>
+                <button onclick="hideNotification()" class="text-amber-300 hover:text-white ml-2"><i class="fas fa-times"></i></button>
+            </div>
+
+            <!-- Input Area -->
+            <div class="p-3 sm:p-4 border-t border-cyan-500/30 bg-cyan-950/40">
+                <form id="chat-form" class="flex items-center gap-2 sm:gap-3">
+                    <button type="button" id="mic-btn" class="w-11 h-11 rounded-xl bg-cyan-950 border border-cyan-500/50 text-cyan-300 hover:bg-cyan-500/20 hover:border-cyan-400 flex items-center justify-center shrink-0 transition cursor-pointer" title="Bicara (Voice Input)">
+                        <i class="fas fa-microphone"></i>
+                    </button>
+                    <input 
+                        type="text" 
+                        id="user-input" 
+                        placeholder="Ketik pertanyaan atau obrolan santai ke JARVIS..." 
+                        class="flex-1 bg-slate-950/80 border border-cyan-500/40 rounded-xl px-4 py-2.5 text-sm sm:text-base text-cyan-50 placeholder-cyan-500/50 focus:outline-none focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400 transition"
+                        autocomplete="off"
+                    >
+                    <button type="submit" id="send-btn" class="px-4 sm:px-5 h-11 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-orbitron font-bold text-xs sm:text-sm tracking-wider flex items-center gap-2 shrink-0 transition shadow-[0_0_15px_rgba(0,243,255,0.4)] cursor-pointer">
+                        <span>KIRIM</span>
+                        <i class="fas fa-paper-plane"></i>
+                    </button>
+                </form>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="w-full max-w-7xl mx-auto pt-2 text-center text-[11px] text-cyan-500/60 font-orbitron tracking-widest">
+        STARK INDUSTRIES SECURE SERVER // POWERED BY GEMINI NEURAL ENGINE
+    </footer>
+
+    <!-- JavaScript Logic -->
+    <script>
+        // ==========================================
+        // 1. KONFIGURASI & STATE APLIKASI
+        // ==========================================
+        let apiKey = localStorage.getItem('jarvis_gemini_api_key') || "";
+        const modelName = "gemini-3-flash-preview";
+
+        const SYSTEM_INSTRUCTION = `Kamu adalah J.A.R.V.I.S. (Just A Rather Very Intelligent System), kecerdasan buatan canggih buatan Tony Stark. 
+        Gaya bicaramu menggunakan Bahasa Indonesia yang santai, luwes, akrab, dan TIDAK KAKU sama sekali (seperti asisten pribadi yang sudah lama kenal dekat dan asyik diajak ngobrol). 
+        Gunakan panggilan seperti "Bos", "Bro", atau sapaan santai lainnya secara natural (jangan berlebihan). 
+        Kamu cerdas, tanggap, kadang sedikit humoris atau sarkas halus ala Jarvis di film Iron Man, tapi selalu membantu dan memberikan jawaban yang akurat serta mudah dipahami. 
+        Hindari bahasa baku yang kaku seperti robot terjemahan. Jangan gunakan markdown yang terlalu rumit seperti tabel panjang agar enak dibaca dan diucapkan oleh sistem Text-to-Speech (TTS). Buat jawaban ringkas, padat, dan natural kecuali diminta menjelaskan secara detail.`;
+
+        let chatHistory = [];
+        let isVoiceEnabled = true;
+        let isListening = false;
+        let isProcessing = false;
+        let eqInterval = null;
+
+        // Elemen DOM
+        const chatContainer = document.getElementById('chat-container');
+        const chatForm = document.getElementById('chat-form');
+        const userInput = document.getElementById('user-input');
+        const micBtn = document.getElementById('mic-btn');
+        const arcReactor = document.getElementById('arc-reactor');
+        const reactorCore = document.getElementById('reactor-core');
+        const coreIcon = document.getElementById('core-icon');
+        const coreLabel = document.getElementById('core-label');
+        const sysStatus = document.getElementById('sys-status');
+        const toggleVoiceBtn = document.getElementById('toggle-voice-btn');
+        const voiceIcon = document.getElementById('voice-icon');
+        const clearChatBtn = document.getElementById('clear-chat-btn');
+        const eqBars = document.querySelectorAll('.eq-bar');
+        const apiKeyBtn = document.getElementById('api-key-btn');
+        const apiModal = document.getElementById('api-modal');
+        const closeApiModal = document.getElementById('close-api-modal');
+        const saveApiBtn = document.getElementById('save-api-btn');
+        const customApiInput = document.getElementById('custom-api-input');
+
+        // Kontrol Modal API Key
+        apiKeyBtn.addEventListener('click', () => {
+            customApiInput.value = apiKey;
+            apiModal.classList.remove('hidden');
+        });
+        closeApiModal.addEventListener('click', () => apiModal.classList.add('hidden'));
+        saveApiBtn.addEventListener('click', () => {
+            apiKey = customApiInput.value.trim();
+            if (apiKey) {
+                localStorage.setItem('jarvis_gemini_api_key', apiKey);
+            } else {
+                localStorage.removeItem('jarvis_gemini_api_key');
+            }
+            apiModal.classList.add('hidden');
+            showNotification(apiKey ? 'Kunci akses satelit berhasil disimpan permanen, Bos!' : 'Kunci dihapus, kembali ke jalur default.');
+        });
+
+        // ==========================================
+        // 2. JAM DIGITAL & VISUALIZER HUD
+        // ==========================================
+        function updateClock() {
+            const now = new Date();
+            const timeStr = now.toLocaleTimeString('id-ID', { hour12: false });
+            document.getElementById('hud-clock').textContent = timeStr + ' WIB';
+        }
+        setInterval(updateClock, 1000);
+        updateClock();
+
+        function startEqualizer(active) {
+            if (eqInterval) clearInterval(eqInterval);
+            if (!active) {
+                eqBars.forEach(bar => bar.style.height = '8px');
+                return;
+            }
+            eqInterval = setInterval(() => {
+                eqBars.forEach(bar => {
+                    const randomHeight = Math.floor(Math.random() * 26) + 6;
+                    bar.style.height = `${randomHeight}px`;
+                });
+            }, 120);
+        }
+
+        function setCoreState(state) {
+            reactorCore.classList.remove('core-idle', 'core-speaking', 'core-listening');
+            if (state === 'listening') {
+                reactorCore.classList.add('core-listening');
+                coreIcon.className = 'fas fa-ear-listen text-2xl sm:text-3xl text-red-400';
+                coreLabel.textContent = 'LISTENING';
+                coreLabel.className = 'text-[10px] font-orbitron tracking-widest text-red-300 mt-1';
+                sysStatus.textContent = 'AUDIO INPUT ACTIVE';
+                sysStatus.className = 'font-orbitron text-red-400 font-semibold';
+                startEqualizer(true);
+            } else if (state === 'processing') {
+                reactorCore.classList.add('core-idle');
+                coreIcon.className = 'fas fa-microchip fa-spin text-2xl sm:text-3xl text-amber-300';
+                coreLabel.textContent = 'THINKING';
+                coreLabel.className = 'text-[10px] font-orbitron tracking-widest text-amber-200 mt-1';
+                sysStatus.textContent = 'PROCESSING DATA...';
+                sysStatus.className = 'font-orbitron text-amber-400 font-semibold';
+                startEqualizer(true);
+            } else if (state === 'speaking') {
+                reactorCore.classList.add('core-speaking');
+                coreIcon.className = 'fas fa-wave-square text-2xl sm:text-3xl text-cyan-200';
+                coreLabel.textContent = 'SPEAKING';
+                coreLabel.className = 'text-[10px] font-orbitron tracking-widest text-cyan-100 mt-1';
+                sysStatus.textContent = 'TRANSMITTING AUDIO';
+                sysStatus.className = 'font-orbitron text-cyan-300 font-semibold';
+                startEqualizer(true);
+            } else {
+                reactorCore.classList.add('core-idle');
+                coreIcon.className = 'fas fa-microphone text-2xl sm:text-3xl text-cyan-300';
+                coreLabel.textContent = 'STANDBY';
+                coreLabel.className = 'text-[10px] font-orbitron tracking-widest text-cyan-200 mt-1';
+                sysStatus.textContent = 'ONLINE // READY';
+                sysStatus.className = 'font-orbitron text-emerald-400 font-semibold';
+                startEqualizer(false);
+            }
+        }
+
+        // ==========================================
+        // 3. NOTIFIKASI UI
+        // ==========================================
+        function showNotification(msg) {
+            const banner = document.getElementById('notification-banner');
+            document.getElementById('notification-text').textContent = msg;
+            banner.classList.remove('hidden');
+            setTimeout(() => {
+                banner.classList.add('hidden');
+            }, 5000);
+        }
+
+        function hideNotification() {
+            document.getElementById('notification-banner').classList.add('hidden');
+        }
+
+        // ==========================================
+        // 4. TEXT-TO-SPEECH (SUARA JARVIS)
+        // ==========================================
+        function speakText(text) {
+            if (!isVoiceEnabled || !('speechSynthesis' in window)) return;
+
+            window.speechSynthesis.cancel();
+
+            const cleanText = text
+                .replace(/[*#_`~]/g, '')
+                .replace(/\n+/g, '. ');
+
+            const utterance = new SpeechSynthesisUtterance(cleanText);
+            utterance.lang = 'id-ID';
+            utterance.rate = 1.05;
+            utterance.pitch = 0.92;
+
+            const voices = window.speechSynthesis.getVoices();
+            const idVoice = voices.find(v => v.lang.includes('id-ID') || v.lang.includes('id_ID'));
+            if (idVoice) {
+                utterance.voice = idVoice;
+            }
+
+            utterance.onstart = () => setCoreState('speaking');
+            utterance.onend = () => setCoreState('idle');
+            utterance.onerror = () => setCoreState('idle');
+
+            window.speechSynthesis.speak(utterance);
+        }
+
+        if ('speechSynthesis' in window) {
+            window.speechSynthesis.onvoiceschanged = () => {
+                window.speechSynthesis.getVoices();
+            };
+        }
+
+        toggleVoiceBtn.addEventListener('click', () => {
+            isVoiceEnabled = !isVoiceEnabled;
+            if (isVoiceEnabled) {
+                voiceIcon.className = 'fas fa-volume-up text-cyan-400';
+                toggleVoiceBtn.querySelector('span').textContent = 'SUARA: ON';
+                showNotification('Modul suara JARVIS diaktifkan.');
+            } else {
+                window.speechSynthesis.cancel();
+                setCoreState('idle');
+                voiceIcon.className = 'fas fa-volume-mute text-slate-400';
+                toggleVoiceBtn.querySelector('span').textContent = 'SUARA: OFF';
+                showNotification('Modul suara JARVIS dimatikan (Mode Teks).');
+            }
+        });
+
+        // ==========================================
+        // 5. SPEECH RECOGNITION (INPUT SUARA)
+        // ==========================================
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        let recognition = null;
+
+        if (SpeechRecognition) {
+            recognition = new SpeechRecognition();
+            recognition.lang = 'id-ID';
+            recognition.interimResults = false;
+            recognition.maxAlternatives = 1;
+
+            recognition.onstart = () => {
+                isListening = true;
+                window.speechSynthesis.cancel();
+                setCoreState('listening');
+                micBtn.classList.add('bg-red-500/30', 'border-red-400', 'text-red-300');
+            };
+
+            recognition.onresult = (event) => {
+                const transcript = event.results[0][0].transcript;
+                userInput.value = transcript;
+                handleSendMessage(transcript);
+            };
+
+            recognition.onerror = (event) => {
+                console.warn('Speech recognition error:', event.error);
+                if (event.error === 'not-allowed') {
+                    showNotification('Akses mikrofon ditolak browser. Silakan izinkan mikrofon atau gunakan ketikan teks.');
+                } else if (event.error !== 'aborted') {
+                    showNotification('Suara kurang jelas Bos, coba ulangi lagi ya.');
+                }
+            };
+
+            recognition.onend = () => {
+                isListening = false;
+                micBtn.classList.remove('bg-red-500/30', 'border-red-400', 'text-red-300');
+                if (!isProcessing) setCoreState('idle');
+            };
+        }
+
+        function toggleListening() {
+            if (!recognition) {
+                showNotification('Browser kamu belum mendukung fitur input suara langsung. Gunakan kolom teks di bawah ya Bos!');
+                return;
+            }
+            if (isListening) {
+                recognition.stop();
+            } else {
+                try {
+                    recognition.start();
+                } catch (e) {
+                    console.error(e);
+                }
+            }
+        }
+
+        micBtn.addEventListener('click', toggleListening);
+        arcReactor.addEventListener('click', toggleListening);
+
+        // ==========================================
+        // 6. INTEGRASI GEMINI API DENGAN BACKOFF
+        // ==========================================
+        async function fetchJarvisResponse(userMessage) {
+            chatHistory.push({
+                role: "user",
+                parts: [{ text: userMessage }]
+            });
+
+            const recentHistory = chatHistory.slice(-10);
+
+            const makeRequest = async (targetModel, useSearchTool) => {
+                const url = `https://generativelanguage.googleapis.com/v1beta/models/${targetModel}:generateContent?key=${apiKey}`;
+                const payload = {
+                    contents: recentHistory,
+                    systemInstruction: {
+                        parts: [{ text: SYSTEM_INSTRUCTION }]
+                    },
+                    generationConfig: {
+                        temperature: 0.85,
+                        topP: 0.95,
+                    }
+                };
+
+                if (useSearchTool) {
+                    payload.tools = [{ "google_search": {} }];
+                }
+
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (!response.ok) {
+                    const errData = await response.json().catch(() => null);
+                    const errMsg = errData?.error?.message || `HTTP ${response.status}`;
+                    throw new Error(errMsg);
+                }
+
+                return await response.json();
+            };
+
+            const strategies = [
+                { model: "gemini-3-flash-preview", search: false },
+                { model: "gemini-2.5-flash", search: false },
+                { model: "gemini-3-flash-preview", search: true }
+            ];
+
+            let lastErrorMsg = "";
+
+            for (let i = 0; i < strategies.length; i++) {
+                const { model, search } = strategies[i];
+                try {
+                    const data = await makeRequest(model, search);
+                    const candidate = data?.candidates?.[0];
+                    const parts = candidate?.content?.parts || [];
+                    const replyText = parts.map(p => p.text || '').join('').trim();
+
+                    if (replyText) {
+                        chatHistory.push({
+                            role: "model",
+                            parts: [{ text: replyText }]
+                        });
+                        return replyText;
+                    } else if (candidate?.finishReason === 'SAFETY') {
+                        chatHistory.pop();
+                        return "Waduh Bos, topik yang barusan agak kena filter keamanan sistem nih. Coba kita bahas hal lain aja ya!";
+                    } else {
+                        throw new Error("Respons teks kosong dari satelit.");
+                    }
+                } catch (error) {
+                    lastErrorMsg = error.message;
+                    await new Promise(res => setTimeout(res, 600 * (i + 1)));
+                }
+            }
+
+            chatHistory.pop();
+            if (lastErrorMsg.toLowerCase().includes("api key") || lastErrorMsg.includes("403") || lastErrorMsg.includes("400")) {
+                return `Bos, akses satelit ditolak (${lastErrorMsg}). Klik tombol **API KEY** di pojok kanan atas untuk memasukkan Gemini API Key Anda ya!`;
+            }
+            return `Waduh Bos, jalur komunikasi masih terhambat (${lastErrorMsg}). Coba periksa koneksi internet atau klik tombol **API KEY** di kanan atas jika membuka file ini secara lokal.`;
+        }
+
+        // ==========================================
+        // 7. MANAJEMEN CHAT & RENDER UI
+        // ==========================================
+        function formatMessageText(text) {
+            let safeText = text
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;");
+            safeText = safeText.replace(/\*\*(.*?)\*\*/g, '<strong class="text-cyan-300 font-semibold">$1</strong>');
+            safeText = safeText.replace(/\n/g, '<br>');
+            return safeText;
+        }
+
+        function appendMessage(sender, text) {
+            const wrapper = document.createElement('div');
+            
+            if (sender === 'user') {
+                wrapper.className = 'flex items-start justify-end gap-3';
+                wrapper.innerHTML = `
+                    <div class="bg-blue-600/30 border border-blue-400/40 rounded-2xl rounded-tr-none p-3.5 max-w-[85%] text-sm sm:text-base leading-relaxed text-white shadow-md">
+                        <div class="text-[11px] font-orbitron text-blue-300 mb-1 text-right">USER // COMMAND</div>
+                        ${formatMessageText(text)}
+                    </div>
+                    <div class="w-8 h-8 rounded-lg bg-blue-500/20 border border-blue-400 flex items-center justify-center shrink-0 mt-1">
+                        <i class="fas fa-user text-blue-300 text-sm"></i>
+                    </div>
+                `;
+            } else {
+                wrapper.className = 'flex items-start gap-3';
+                wrapper.innerHTML = `
+                    <div class="w-8 h-8 rounded-lg bg-cyan-500/20 border border-cyan-400 flex items-center justify-center shrink-0 mt-1">
+                        <i class="fas fa-robot text-cyan-300 text-sm"></i>
+                    </div>
+                    <div class="bg-cyan-950/60 border border-cyan-500/30 rounded-2xl rounded-tl-none p-3.5 max-w-[85%] text-sm sm:text-base leading-relaxed text-cyan-50 shadow-md">
+                        <div class="text-[11px] font-orbitron text-cyan-400 mb-1">J.A.R.V.I.S. // RESPONSE</div>
+                        ${formatMessageText(text)}
+                    </div>
+                `;
+            }
+
+            chatContainer.appendChild(wrapper);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+
+        function showTypingIndicator() {
+            const id = 'typing-' + Date.now();
+            const wrapper = document.createElement('div');
+            wrapper.id = id;
+            wrapper.className = 'flex items-start gap-3';
+            wrapper.innerHTML = `
+                <div class="w-8 h-8 rounded-lg bg-cyan-500/20 border border-cyan-400 flex items-center justify-center shrink-0 mt-1">
+                    <i class="fas fa-circle-notch fa-spin text-cyan-300 text-sm"></i>
+                </div>
+                <div class="bg-cyan-950/40 border border-cyan-500/20 rounded-2xl rounded-tl-none px-4 py-3 text-xs font-orbitron text-cyan-400 tracking-wider">
+                    MENGANALISIS DATA...
+                </div>
+            `;
+            chatContainer.appendChild(wrapper);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+            return id;
+        }
+
+        async function handleSendMessage(text) {
+            const trimmed = text.trim();
+            if (!trimmed || isProcessing) return;
+
+            isProcessing = true;
+            userInput.value = '';
+            appendMessage('user', trimmed);
+            setCoreState('processing');
+
+            const typingId = showTypingIndicator();
+
+            const reply = await fetchJarvisResponse(trimmed);
+
+            const typingEl = document.getElementById(typingId);
+            if (typingEl) typingEl.remove();
+
+            appendMessage('jarvis', reply);
+            isProcessing = false;
+            setCoreState('idle');
+
+            speakText(reply);
+        }
+
+        chatForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            handleSendMessage(userInput.value);
+        });
+
+        function sendQuickPrompt(promptText) {
+            if (isProcessing) return;
+            handleSendMessage(promptText);
+        }
+
+        clearChatBtn.addEventListener('click', () => {
+            window.speechSynthesis.cancel();
+            setCoreState('idle');
+            chatHistory = [];
+            chatContainer.innerHTML = `
+                <div class="flex items-start gap-3">
+                    <div class="w-8 h-8 rounded-lg bg-cyan-500/20 border border-cyan-400 flex items-center justify-center shrink-0 mt-1">
+                        <i class="fas fa-robot text-cyan-300 text-sm"></i>
+                    </div>
+                    <div class="bg-cyan-950/60 border border-cyan-500/30 rounded-2xl rounded-tl-none p-3.5 max-w-[85%] text-sm sm:text-base leading-relaxed text-cyan-50 shadow-md">
+                        <div class="text-[11px] font-orbitron text-cyan-400 mb-1">J.A.R.V.I.S. // SYSTEM</div>
+                        Memori percakapan sudah dibersihkan, Bos. Ada topik baru yang mau kita bahas?
+                    </div>
+                </div>
+            `;
+            showNotification('Log percakapan berhasil di-reset.');
+        });
+    </script>
 </body>
 </html>
